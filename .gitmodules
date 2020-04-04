@@ -1,0 +1,3 @@
+[submodule "backbone/outlet/mobilenetv3"]
+	path = backbone/outlet/mobilenetv3
+	url = https://github.com/xiaolai-sqlai/mobilenetv3
