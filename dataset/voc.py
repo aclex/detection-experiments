@@ -81,7 +81,7 @@ class VOCDetection(Dataset):
 		}
 
 		if self.transform:
-			result = self.transform(result)
+			result = self.transform(**result)
 
 		return result
 

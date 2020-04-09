@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import detector.ssd.config as config
+
+from .match_prior import MatchPrior
 from .utils import box_utils
 
 
@@ -14,14 +17,26 @@ class MultiboxLoss(nn.Module):
          and Smooth L1 regression loss.
         """
         super(MultiboxLoss, self).__init__()
+
         self.iou_threshold = iou_threshold
         self.neg_pos_ratio = neg_pos_ratio
         self.center_variance = center_variance
         self.size_variance = size_variance
+
+        self.match_prior = MatchPrior(config.priors,
+                                      config.center_variance,
+                                      config.size_variance,
+                                      iou_threshold=0.5)
+
         self.priors = priors
         self.priors.to(device)
 
-    def forward(self, confidence, predicted_locations, labels, gt_locations):
+    def forward(self, confidence, predicted_locations, labels, gt_boxes):
+        locations, labels = self.match_prior(gt_boxes, labels)
+
+        return self._apply(confidence, predicted_locations, labels, locations)
+
+    def _apply(self, confidence, predicted_locations, labels, gt_locations):
         """Compute classification loss and smooth l1 loss.
 
         Args:

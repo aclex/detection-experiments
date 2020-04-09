@@ -1,62 +1,43 @@
-from detector.ssd.transforms import *
+import albumentations as A
+
+from transform.to_tensor import ToTensor
 
 
-class TrainAugmentation:
-    def __init__(self, size, mean=0, std=1.0):
-        """
-        Args:
-            size: the size the of final image.
-            mean: mean pixel value per channel.
-        """
-        self.mean = mean
-        self.size = size
-        self.augment = Compose([
-            ConvertFromInts(),
-            PhotometricDistort(),
-            Expand(self.mean),
-            RandomSampleCrop(),
-            RandomMirror(),
-            ToPercentCoords(),
-            Resize(self.size),
-            SubtractMeans(self.mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
-            ToTensor(),
-        ])
-
-    def __call__(self, img, boxes, labels):
-        """
-
-        Args:
-            img: the output of cv.imread in RGB layout.
-            boxes: boundding boxes in the form of (x1, y1, x2, y2).
-            labels: labels of boxes.
-        """
-        return self.augment(img, boxes, labels)
+class GetAug(A.Compose):
+    def __init__(self, aug, bbox_format='albumentations',
+                 min_area=0., min_visibility=0.):
+	    super(GetAug, self).__init__(
+            aug,
+            A.BboxParams(format=bbox_format, min_area=min_area,
+						 min_visibility=min_visibility,
+                         label_fields=['category_id']))
 
 
-class TestTransform:
-    def __init__(self, size, mean=0.0, std=1.0):
-        self.transform = Compose([
-            ToPercentCoords(),
-            Resize(size),
-            SubtractMeans(mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
-            ToTensor(),
-        ])
-
-    def __call__(self, image, boxes, labels):
-        return self.transform(image, boxes, labels)
+class TrainAugmentation(GetAug):
+    def __init__(self, size, mean, std, bbox_format='albumentations'):
+        super(TrainAugmentation, self).__init__([
+                A.RandomContrast(),
+                A.RandomGamma(),
+                A.CLAHE(),
+                A.Resize(*size),
+                A.Normalize(mean=mean, std=std),
+                ToTensor()
+            ], bbox_format)
 
 
-class PredictionTransform:
-    def __init__(self, size, mean=0.0, std=1.0):
-        self.transform = Compose([
-            Resize(size),
-            SubtractMeans(mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
-            ToTensor()
-        ])
+class TestTransform(GetAug):
+    def __init__(self, size, mean, std, bbox_format='albumentations'):
+        super(TestTransform, self).__init__([
+                A.Resize(*size),
+                A.Normalize(mean=mean, std=std),
+                ToTensor()
+            ], bbox_format)
 
-    def __call__(self, image):
-        image, _, _ = self.transform(image)
-        return image
+
+class PredictionTransform(GetAug):
+    def __init__(self, size, mean, std, bbox_format='albumentations'):
+        super(PredictionTransform, self).__init__([
+                A.Resize(*size),
+                A.Normalize(mean=mean, std=std),
+                ToTensor()
+            ], bbox_format)

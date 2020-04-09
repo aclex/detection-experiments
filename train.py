@@ -13,7 +13,8 @@ from detector.ssd.ssd import MatchPrior
 from detector.ssd.mobilenetv3_ssd_lite import create_mobilenetv3_large_ssd_lite, create_mobilenetv3_small_ssd_lite
 from detector.ssd.multibox_loss import MultiboxLoss
 
-from dataset.voc import VOCDataset
+from dataset.voc import VOCDetection
+from transform.collate import collate
 
 import detector.ssd.config as config
 from detector.ssd.data_preprocessing import TrainAugmentation, TestTransform
@@ -31,10 +32,14 @@ def train(loader, net, criterion, optimizer, device, epoch=-1):
     num = 0
 
     for i, data in enumerate(loader):
-        images, boxes, labels = data
+        images = data["image"]
+        boxes = data["bboxes"]
+        labels = data["category_id"]
+
         images = images.to(device)
-        boxes = boxes.to(device)
-        labels = labels.to(device)
+        boxes = [b.to(device) for b in boxes]
+        labels = [l.to(device) for l in labels]
+
         num += 1
 
         optimizer.zero_grad()
@@ -69,10 +74,14 @@ def test(loader, net, criterion, device):
     num = 0
 
     for i, data in enumerate(loader):
-        images, boxes, labels = data
+        images = data["image"]
+        boxes = data["bboxes"]
+        labels = data["category_id"]
+
         images = images.to(device)
-        boxes = boxes.to(device)
-        labels = labels.to(device)
+        boxes = [b.to(device) for b in boxes]
+        labels = [l.to(device) for l in labels]
+
         num += 1
 
         with torch.no_grad():
@@ -162,30 +171,32 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    train_transform = TrainAugmentation(config.image_size, config.image_mean, config.image_std)
-    target_transform = MatchPrior(config.priors, config.center_variance, config.size_variance, 0.5)
+    train_transform = TrainAugmentation((config.image_size, config.image_size),
+                                        config.image_mean, config.image_std,
+                                        bbox_format='pascal_voc')
 
-    test_transform = TestTransform(config.image_size, config.image_mean, config.image_std)
+    test_transform = TestTransform((config.image_size, config.image_size),
+                                   config.image_mean, config.image_std,
+                                   bbox_format='pascal_voc')
 
     logging.info("Prepare training datasets.")
 
-    dataset = VOCDataset(args.dataset, transform=train_transform,
-                            target_transform=target_transform)
+    dataset = VOCDetection(args.dataset, transform=train_transform)
 
     num_classes = len(dataset.class_names)
 
     logging.info("Train dataset size: {}".format(len(dataset)))
 
-    train_loader = DataLoader(dataset, args.batch_size,
+    train_loader = DataLoader(dataset, args.batch_size, collate_fn=collate,
                               num_workers=args.num_workers,
                               shuffle=True)
 
     logging.info("Prepare Validation datasets.")
-    val_dataset = VOCDataset(args.validation_dataset, transform=test_transform,
-                                target_transform=target_transform, is_test=True)
+    val_dataset = VOCDetection(args.validation_dataset, image_set="val",
+                               transform=test_transform)
     logging.info("validation dataset size: {}".format(len(val_dataset)))
 
-    val_loader = DataLoader(val_dataset, args.batch_size,
+    val_loader = DataLoader(val_dataset, args.batch_size, collate_fn=collate,
                             num_workers=args.num_workers,
                             shuffle=False)
 
