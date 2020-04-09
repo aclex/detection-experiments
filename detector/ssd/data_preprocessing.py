@@ -1,6 +1,7 @@
 import albumentations as A
 
 from transform.to_tensor import ToTensor
+from transform.convert_bbox_format import ConvertBboxFormat
 
 
 class GetAug(A.Compose):
@@ -19,8 +20,11 @@ class TrainAugmentation(GetAug):
                 A.RandomContrast(),
                 A.RandomGamma(),
                 A.CLAHE(),
+                A.HorizontalFlip(),
                 A.Resize(*size),
-                A.Normalize(mean=mean, std=std),
+                A.Normalize(),
+                ConvertBboxFormat('pascal_voc', 'albumentations',
+                                  size[0], size[1]),
                 ToTensor()
             ], bbox_format)
 
@@ -29,7 +33,9 @@ class TestTransform(GetAug):
     def __init__(self, size, mean, std, bbox_format='albumentations'):
         super(TestTransform, self).__init__([
                 A.Resize(*size),
-                A.Normalize(mean=mean, std=std),
+                A.Normalize(),
+                ConvertBboxFormat('pascal_voc', 'albumentations',
+                                  size[0], size[1]),
                 ToTensor()
             ], bbox_format)
 
@@ -38,6 +44,8 @@ class PredictionTransform(GetAug):
     def __init__(self, size, mean, std, bbox_format='albumentations'):
         super(PredictionTransform, self).__init__([
                 A.Resize(*size),
-                A.Normalize(mean=mean, std=std),
+                A.Normalize(),
+                ConvertBboxFormat('pascal_voc', 'albumentations',
+                                  size[0], size[1]),
                 ToTensor()
             ], bbox_format)
