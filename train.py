@@ -36,9 +36,9 @@ def train(loader, net, criterion, optimizer, device, epoch=-1):
         boxes = data["bboxes"]
         labels = data["category_id"]
 
-        images = images.to(device)
-        boxes = [b.to(device) for b in boxes]
-        labels = [l.to(device) for l in labels]
+        images = images.to(device, dtype=torch.float32)
+        boxes = [b.to(device, dtype=torch.float32) for b in boxes]
+        labels = [l.to(device, dtype=torch.long) for l in labels]
 
         num += 1
 
@@ -78,9 +78,9 @@ def test(loader, net, criterion, device):
         boxes = data["bboxes"]
         labels = data["category_id"]
 
-        images = images.to(device)
-        boxes = [b.to(device) for b in boxes]
-        labels = [l.to(device) for l in labels]
+        images = images.to(device, dtype=torch.float32)
+        boxes = [b.to(device, dtype=torch.float32) for b in boxes]
+        labels = [l.to(device, dtype=torch.long) for l in labels]
 
         num += 1
 
@@ -227,8 +227,9 @@ def main():
 
     net.to(device)
 
-    criterion = MultiboxLoss(config.priors, iou_threshold=0.5, neg_pos_ratio=3,
-                             center_variance=0.1, size_variance=0.2, device=device)
+    priors = config.priors.to(device=device, dtype=torch.float32)
+    criterion = MultiboxLoss(priors, iou_threshold=0.5, neg_pos_ratio=3,
+                             center_variance=0.1, size_variance=0.2)
     optimizer = torch.optim.SGD(params, lr=args.lr, momentum=args.momentum,
                                 weight_decay=args.weight_decay)
     logging.info(f"Learning rate: {args.lr}, Base net learning rate: {base_net_lr}, "
