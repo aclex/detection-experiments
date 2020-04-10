@@ -9,7 +9,6 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
 from detector.ssd.utils.misc import Timer
-from detector.ssd.ssd import MatchPrior
 from detector.ssd.mobilenetv3_ssd_lite import create_mobilenetv3_large_ssd_lite, create_mobilenetv3_small_ssd_lite
 from detector.ssd.multibox_loss import MultiboxLoss
 
