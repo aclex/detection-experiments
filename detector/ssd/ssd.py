@@ -100,7 +100,6 @@ class SSD(nn.Module):
         output = self.forward(x)
         return self.get_predictions(output)
 
-
     def compute_header(self, i, x):
         confidence = self.classification_headers[i](x)
         confidence = confidence.permute(0, 2, 3, 1).contiguous()

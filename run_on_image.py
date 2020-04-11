@@ -47,6 +47,7 @@ def main():
 
 	orig_image = cv2.imread("airplane.jpg")
 	image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
+
 	boxes, labels, probs = predictor.predict(image, 10, 0.4)
 
 	for i in range(boxes.size(0)):
