@@ -6,21 +6,22 @@ from .utils.misc import Timer
 
 
 class Predictor:
-    def __init__(self, net, size, mean=0.0, std=1.0, nms_method=None,
-                 iou_threshold=0.45, filter_threshold=0.01, candidate_size=200, sigma=0.5, device=None):
+    def __init__(self, net, nms_method=None, iou_threshold=0.45,
+                 filter_threshold=0.01, candidate_size=200, sigma=0.5,
+                 device="cpu"):
         self.net = net
-        self.transform = PredictionTransform(size, mean, std,
-                                             bbox_format='pascal_voc')
+        self.transform = PredictionTransform(
+            (net.config.image_size, net.config.image_size),
+            net.config.image_mean, net.config.image_std,
+            bbox_format='pascal_voc')
         self.iou_threshold = iou_threshold
         self.filter_threshold = filter_threshold
         self.candidate_size = candidate_size
         self.nms_method = nms_method
 
         self.sigma = sigma
-        if device:
-            self.device = device
-        else:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        self.device = device
 
         self.net.to(self.device)
         self.net.eval()

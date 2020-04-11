@@ -50,9 +50,7 @@ def create_mobilenetv3_small_ssd_lite(num_classes, width_mult=1.0, use_batch_nor
 
 
 def create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200, nms_method=None, sigma=0.5, device=torch.device('cpu')):
-    predictor = Predictor(net, (config.image_size, config.image_size),
-                          config.image_mean,
-                          config.image_std,
+    predictor = Predictor(net,
                           nms_method=nms_method,
                           iou_threshold=config.iou_threshold,
                           candidate_size=candidate_size,
