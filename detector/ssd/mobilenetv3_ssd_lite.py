@@ -43,10 +43,10 @@ def create_mobilenetv3_large_ssd_lite(num_classes, width_mult=1.0, use_batch_nor
                extras, classification_headers, regression_headers, is_test=is_test, config=config)
 
 
-def create_mobilenetv3_small_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False, is_test=False):
+def create_mobilenetv3_small_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False):
     base_net = MobileNetV3_Small()
 
-    return SSD(num_classes, base_net, is_test=is_test, config=config)
+    return SSD(num_classes, base_net, config=config)
 
 
 def create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200, nms_method=None, sigma=0.5, device=torch.device('cpu')):

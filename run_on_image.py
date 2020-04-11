@@ -33,9 +33,9 @@ def main():
 			'sheep', 'sofa', 'train', 'tvmonitor')
 
 	if args.model == 'mb3-large-ssd-lite':
-		net = create_mobilenetv3_large_ssd_lite(len(class_names), is_test=True)
+		net = create_mobilenetv3_large_ssd_lite(len(class_names))
 	elif args.model == 'mb3-small-ssd-lite':
-		net = create_mobilenetv3_small_ssd_lite(len(class_names), is_test=True)
+		net = create_mobilenetv3_small_ssd_lite(len(class_names))
 	else:
 		print("Model type is wrong. It should be one of mb3-large-ssd-lite "
 			  "or mb3-small-ssd-lite.")
