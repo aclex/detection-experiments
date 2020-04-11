@@ -12,7 +12,7 @@ from nn.separable_conv_2d import SeparableConv2d
 
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, base_net, config=None, device=None):
+    def __init__(self, num_classes, base_net, config=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
@@ -48,13 +48,6 @@ class SSD(nn.Module):
 
         self.config = config
 
-        if device:
-            self.device = device
-        else:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        self.priors = config.priors.to(self.device)
-
     def forward(self, x):
         confidences = []
         locations = []
@@ -86,7 +79,7 @@ class SSD(nn.Module):
 
         confidences = F.softmax(confidences, dim=2)
         boxes = box_utils.convert_locations_to_boxes(
-            locations, self.priors,
+            locations, self.config.priors,
             self.config.center_variance, self.config.size_variance
         )
         boxes = box_utils.center_form_to_corner_form(boxes)
