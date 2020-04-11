@@ -12,13 +12,14 @@ from nn.separable_conv_2d import SeparableConv2d
 
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, base_net, config=None):
+    def __init__(self, num_classes, base_net, arch_name, config=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
 
         self.num_classes = num_classes
         self.base_net = base_net
+        self.arch_name = arch_name
 
         self.extras = nn.ModuleList([
             Block(3, 576, 256, 512, hswish(), None, stride=2),
