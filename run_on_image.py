@@ -55,7 +55,8 @@ def main():
 		cv2.rectangle(orig_image,
 					  (box[0], box[1]), (box[2], box[3]),
 					  (255, 255, 0), 4)
-		label = f"{labels[i]}: {probs[i]:.2f}"
+
+		label = f"{class_names[labels[i]]}: {probs[i]:.2f}"
 		cv2.putText(orig_image, label,
 					(box[0] + 20, box[1] + 40),
 					cv2.FONT_HERSHEY_SIMPLEX,
@@ -68,6 +69,9 @@ def main():
 	cv2.imshow("result", orig_image)
 	print(f"Found {len(probs)} objects. The output image is {path}")
 	cv2.waitKey(0)
+
+	cap.release()
+	cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
