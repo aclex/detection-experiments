@@ -117,13 +117,13 @@ def main():
 		"categories": gt_coco["categories"]
 	}
 
+	bbox_converter = ConvertBboxFormat(source_format='pascal_voc',
+									   target_format='coco')
+
 	for i in range(len(dataset)):
 		sample = dataset[i]
 		image = sample['image']
 		height, width = image.shape[:2]
-		bbox_converter = ConvertBboxFormat(source_format='pascal_voc',
-										   target_format='coco',
-										   rows=height, cols=width)
 
 		image_record = create_coco_image_record(i, (width, height))
 		gt_coco["images"].append(image_record)

@@ -10,8 +10,8 @@ from albumentations.augmentations.bbox_utils import (
 
 
 class ConvertBboxFormat(A.DualTransform):
-	def __init__(self, source_format, target_format, rows, cols,
-				 check_validity=False, always_apply=True, p=1.0):
+	def __init__(self, source_format, target_format, check_validity=False,
+				 always_apply=True, p=1.0):
 		super(ConvertBboxFormat, self).__init__(always_apply, p)
 
 		if source_format not in { "pascal_voc", "coco", "albumentations", "yolo" }:
@@ -26,8 +26,6 @@ class ConvertBboxFormat(A.DualTransform):
 
 		self.source_format = source_format
 		self.target_format = target_format
-		self.rows = rows
-		self.cols = cols
 		self.check_validity = check_validity
 
 	@property
@@ -37,30 +35,30 @@ class ConvertBboxFormat(A.DualTransform):
 		return { t: p  for t, p in super_targets.items() if t == "bboxes" }
 
 	def apply_to_bbox(self, bbox, **params):
+		rows = params['rows']
+		cols = params['cols']
 		if self.source_format == 'albumentations':
-			return convert_bbox_from_albumentations(bbox, self.target_format,
-													self.rows, self.cols,
-													self.check_validity)
+			return convert_bbox_from_albumentations(
+				bbox, self.target_format, rows, cols, self.check_validity)
 
 		elif self.target_format == 'albumentations':
-			return convert_bbox_to_albumentations(bbox, self.source_format,
-												  self.rows, self.cols,
-												  self.check_validity)
+			return convert_bbox_to_albumentations(
+				bbox, self.source_format, rows, cols, self.check_validity)
 
 		else:
 			if self.check_validity:
 				check_bbox(bbox)
 
 			if self.target_format == 'pascal_voc':
-				return self._convert_to_pascal_voc(bbox)
+				return self._convert_to_pascal_voc(bbox, rows, cols)
 
 			elif self.target_format == 'coco':
-				return self._convert_to_coco(bbox)
+				return self._convert_to_coco(bbox, rows, cols)
 
 			elif self.target_format == 'yolo':
-				return self._convert_to_yolo(bbox)
+				return self._convert_to_yolo(bbox, rows, cols)
 
-	def _convert_to_pascal_voc(self, bbox):
+	def _convert_to_pascal_voc(self, bbox, rows, cols):
 		(x, y, width, height), tail = bbox[:4], bbox[4:]
 
 		if self.source_format == 'coco':
@@ -80,7 +78,7 @@ class ConvertBboxFormat(A.DualTransform):
 
 			return (x_min, y_min, x_max, y_max) + tail
 
-	def _convert_to_coco(self, bbox):
+	def _convert_to_coco(self, bbox, rows, cols):
 		if self.source_format == 'pascal_voc':
 			(x1, y1, x2, y2), tail = bbox[:4], bbox[4:]
 			return (x1, y1, x2 - x1, y2 - y1) + tail
@@ -97,13 +95,13 @@ class ConvertBboxFormat(A.DualTransform):
 
 			return (x_min, y_min, width, height) + tail
 
-	def _convert_to_yolo(self, bbox):
+	def _convert_to_yolo(self, bbox, rows, cols):
 		if self.source_format == 'pascal_voc':
 			(x_min, y_min, x_max, y_max), tail = bbox[:4], bbox[4:]
 			return normalize_bbox((
 				(x_max - x_min) / 2, (y_max - y_min) / 2,
 				(x_max - x_min), (y_max - y_min)
-			) + tail, self.rows, self.cols)
+			) + tail, rows, cols)
 
 		elif self.source_format == 'coco':
 			(x, y, width, height), tail = bbox[:4], bbox[4:]
@@ -112,4 +110,4 @@ class ConvertBboxFormat(A.DualTransform):
 				y + height / 2,
 				width,
 				height
-			) + tail, self.rows, self.cols)
+			) + tail, rows, cols)
