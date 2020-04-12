@@ -10,14 +10,13 @@ from detector.ssd.mobilenetv3_ssd_lite import (
 	create_mobilenetv3_ssd_lite_predictor
 )
 
+from storage.util import load
+
 
 def main():
 	parser = argparse.ArgumentParser("Utility to process an image "
 									 "through the detection model")
 
-	parser.add_argument("--model", '-m', type=str, default='mb3-small-ssd-lite',
-						help="model to use ('mb3-large-ssd-lite', "
-						"'mb3-small-ssd-lite' are supported)")
 	parser.add_argument("--model-path", '-p', type=str, required=True,
 						help="path to the trained model")
 	parser.add_argument("image_path", type=str, nargs=1,
@@ -25,25 +24,10 @@ def main():
 
 	args = parser.parse_args()
 
-	class_names = ('BACKGROUND',
-			'aeroplane', 'bicycle', 'bird', 'boat',
-			'bottle', 'bus', 'car', 'cat', 'chair',
-			'cow', 'diningtable', 'dog', 'horse',
-			'motorbike', 'person', 'pottedplant',
-			'sheep', 'sofa', 'train', 'tvmonitor')
+	model, class_names = load(args.model_path)
+	model.eval()
 
-	if args.model == 'mb3-large-ssd-lite':
-		net = create_mobilenetv3_large_ssd_lite(len(class_names))
-	elif args.model == 'mb3-small-ssd-lite':
-		net = create_mobilenetv3_small_ssd_lite(len(class_names))
-	else:
-		print("Model type is wrong. It should be one of mb3-large-ssd-lite "
-			  "or mb3-small-ssd-lite.")
-		sys.exit(1)
-
-	net.load(args.model_path)
-
-	predictor = create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200)
+	predictor = create_mobilenetv3_ssd_lite_predictor(model, candidate_size=200)
 
 	orig_image = cv2.imread(args.image_path[0])
 	image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)

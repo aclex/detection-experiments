@@ -18,6 +18,8 @@ from transform.collate import collate
 import detector.ssd.config as config
 from detector.ssd.data_preprocessing import TrainAugmentation, TestTransform
 
+from storage.util import save
+
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -143,7 +145,7 @@ def main():
     parser.add_argument('--use-cuda', default=True, type=bool,
                         help='Use CUDA to train model')
 
-    parser.add_argument('--checkpoint-folder', default='output',
+    parser.add_argument('--checkpoint-path', default='output',
                         help='Directory for saving checkpoint models')
 
 
@@ -262,8 +264,9 @@ def main():
                 f"Validation Regression Loss {val_regression_loss:.4f}, " +
                 f"Validation Classification Loss: {val_classification_loss:.4f}"
             )
-            model_path = os.path.join(args.checkpoint_folder, f"{args.net}-Epoch-{epoch}-Loss-{val_loss}.pth")
-            net.save(model_path)
+            filename = f"{args.net}-Epoch-{epoch}-Loss-{val_loss}.pth"
+            model_path = os.path.join(args.checkpoint_path, filename)
+            save(net, dataset.class_names, model_path)
             logging.info(f"Saved model {model_path}")
 
 

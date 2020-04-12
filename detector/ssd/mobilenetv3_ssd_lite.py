@@ -9,11 +9,6 @@ from detector.ssd.predictor import Predictor
 import detector.ssd.config as config
 
 
-name_to_ctor = {
-    "mb3-small-ssd-lite": create_mobilenetv3_small_ssd_lite
-}
-
-
 def create_mobilenetv3_large_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False, is_test=False):
     base_net = MobileNetV3_Large().features
 
@@ -62,3 +57,8 @@ def create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200, nms_method=No
                           sigma=sigma,
                           device=device)
     return predictor
+
+
+name_to_ctor = {
+    "mb3-small-ssd-lite": create_mobilenetv3_small_ssd_lite
+}

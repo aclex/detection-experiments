@@ -23,6 +23,8 @@ from detector.ssd.utils.misc import Timer
 
 from util import measurements
 
+from storage.util import load
+
 
 def group_annotation_by_class(dataset):
 	true_case_stat = {}
@@ -116,10 +118,6 @@ def main():
 	parser = argparse.ArgumentParser(
 		description="Calculate Pascal VOC evaluation metrics")
 
-	parser.add_argument("--model", '-m', type=str, default='mb3-small-ssd-lite',
-						help="model to use ('mb3-large-ssd-lite', "
-						"'mb3-small-ssd-lite' are supported)")
-
 	parser.add_argument("--model-path", '-p', type=str, required=True,
 						help="path to the trained model")
 
@@ -143,23 +141,21 @@ def main():
 
 	dataset = VOCDetection(root=args.dataset, year='2007', image_set='val')
 
-	true_case_stat, all_gb_boxes, all_difficult_cases = \
-		group_annotation_by_class(dataset)
+	model, class_names = load(args.model_path)
+	model = model.to("cpu")
+	model.eval()
 
-	if args.model == 'mb3-large-ssd-lite':
-		net = create_mobilenetv3_large_ssd_lite(len(class_names))
-	elif args.model == 'mb3-small-ssd-lite':
-		net = create_mobilenetv3_small_ssd_lite(len(class_names))
-	else:
-		print("Model type is wrong. It should be one of mb3-large-ssd-lite "
-			  "or mb3-small-ssd-lite.")
-		sys.exit(1)
-
-	net.load(args.model_path)
-	net = net.to("cpu")
+	if dataset.class_names != class_names:
+		print("Dataset classes don't match the classes "
+			  "the specified model is trained with. "
+			  "No chance to get valid results, so I give up.")
+		sys.exit(-1)
 
 	predictor = create_mobilenetv3_ssd_lite_predictor(
-		net, nms_method=args.nms_method)
+		model, nms_method=args.nms_method)
+
+	true_case_stat, all_gb_boxes, all_difficult_cases = \
+		group_annotation_by_class(dataset)
 
 	results_per_class = dict()
 	for i in range(len(dataset)):
