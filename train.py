@@ -13,6 +13,8 @@ from detector.ssd.mobilenetv3_ssd_lite import create_mobilenetv3_large_ssd_lite,
 from detector.ssd.multibox_loss import MultiboxLoss
 
 from dataset.voc import VOCDetection
+from dataset.coco import CocoDetection
+
 from transform.collate import collate
 
 import detector.ssd.config as config
@@ -101,11 +103,23 @@ def main():
     parser = argparse.ArgumentParser(
         description='Single Shot MultiBox Detector Training With Pytorch')
 
-    parser.add_argument('--dataset', required=True, help='Dataset directory path')
-    parser.add_argument('--validation-dataset', help='Dataset directory path')
+    parser.add_argument('--dataset-style', type=str, required=True,
+                        help="Style of dataset "
+                        "(supported are 'pascal-voc' and 'coco')")
+    parser.add_argument('--dataset', required=True, help='Dataset path')
+    parser.add_argument('--train-image-set', type=str, default="train",
+                        help='Image set (annotation file basename for COCO) '
+                        'to use for training')
+    parser.add_argument('--val-image-set', type=str, default="val",
+                        help='Image set (annotation file basename for COCO) '
+                        'to use for validation')
+    parser.add_argument('--val-dataset', default=None,
+                        help='Separate validation dataset directory path')
 
     parser.add_argument('--net', default="mb3-small-ssd-lite",
-                        help="The network architecture, it can be mb3-large-ssd-lite or mb3-small-ssd-lite.")
+                        help="Network architecture "
+                        "(supported are mb3-large-ssd-lite and "
+                        "mb3-small-ssd-lite)")
 
     # Params for SGD
     parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
@@ -172,17 +186,32 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
+    if args.dataset_style == 'pascal-voc':
+        bbox_format = 'pascal_voc'
+    elif args.dataset_style == 'coco':
+        bbox_format = 'coco'
+    else:
+        print("Dataset style %s is not supported" % args.dataset_style)
+        sys.exit(-1)
+
     train_transform = TrainAugmentation((config.image_size, config.image_size),
                                         config.image_mean, config.image_std,
-                                        bbox_format='pascal_voc')
+                                        bbox_format=bbox_format)
 
     test_transform = TestTransform((config.image_size, config.image_size),
                                    config.image_mean, config.image_std,
-                                   bbox_format='pascal_voc')
+                                   bbox_format=bbox_format)
 
-    logging.info("Prepare training datasets.")
+    logging.info("Loading datasets...")
 
-    dataset = VOCDetection(args.dataset, transform=train_transform)
+    if args.dataset_style == 'pascal-voc':
+        dataset = VOCDetection(root=args.dataset,
+                               image_set=args.train_image_set,
+                               transform=train_transform)
+    elif args.dataset_style == 'coco':
+        dataset = CocoDetection(root=args.dataset,
+                                ann_file="%s.json" % args.train_image_set,
+                                transform=train_transform)
 
     num_classes = len(dataset.class_names)
 
@@ -192,10 +221,21 @@ def main():
                               num_workers=args.num_workers,
                               shuffle=True)
 
-    logging.info("Prepare Validation datasets.")
-    val_dataset = VOCDetection(args.validation_dataset, image_set="val",
+    if args.val_dataset is not None:
+        val_dataset_root = args.val_dataset
+    else:
+        val_dataset_root = args.dataset
+
+    if args.dataset_style == 'pascal-voc':
+        val_dataset = VOCDetection(root=val_dataset_root,
+                               image_set=args.val_image_set,
                                transform=test_transform)
-    logging.info("validation dataset size: {}".format(len(val_dataset)))
+    elif args.dataset_style == 'coco':
+        val_dataset = CocoDetection(root=val_dataset_root,
+                                    ann_file="%s.json" % args.val_image_set,
+                                    transform=test_transform)
+
+    logging.info("Validation dataset size: {}".format(len(val_dataset)))
 
     val_loader = DataLoader(val_dataset, args.batch_size, collate_fn=collate,
                             num_workers=args.num_workers,

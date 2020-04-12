@@ -15,17 +15,20 @@ class CocoDetection(Dataset):
 		"""
 		super(CocoDetection, self).__init__()
 
-		from pycocotools import COCO
-		self.coco = COCO(ann_file)
-        self._ids = list(sorted(self.coco.imgs.keys()))
+		self.root = root
+		self.transform = transform
+
+		from pycocotools.coco import COCO
+		self.coco = COCO(self._get_abs_path(ann_file))
+		self._ids = list(sorted(self.coco.imgs.keys()))
 
 		categories = self.coco.cats
 
-		self.class_names = list()
-		self.class_ids = dict()
+		self.class_names = ['BACKGROUND']
+		self.class_ids = [-1]
 
 		for cat_id, cat_name in categories.items():
-			self.class_names.append(cat_name)
+			self.class_names.append(cat_name["name"])
 			self.class_ids.append(cat_id)
 
 	def __getitem__(self, index):
@@ -62,20 +65,27 @@ class CocoDetection(Dataset):
 		return len(self._ids)
 
 	def _get_annotation(self, image_id):
-		ann_ids = coco.getAnnIds(imgIds=image_id)
-		objects = coco.loadAnns(ann_ids)
+		ann_ids = self.coco.getAnnIds(imgIds=image_id)
+		objects = self.coco.loadAnns(ann_ids)
 
 		boxes = []
 		labels = []
 
 		for object in objects:
 				boxes.append(object['bbox'])
-				labels.append(self.class_ids.index(object['category_id'])
+				labels.append(self.class_ids.index(object['category_id']))
 
 		return boxes, labels
 
+	def _get_abs_path(self, path):
+		if os.path.isabs(path):
+			return path
+		else:
+			return os.path.join(self.root, path)
+
 	def _read_image(self, image_id):
-		image_file = self.coco.loadImgs(image_id)[0]['file_name']
+		image_file = self._get_abs_path(
+			self.coco.loadImgs(image_id)[0]['file_name'])
 
 		image = cv2.imread(str(image_file))
 		image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

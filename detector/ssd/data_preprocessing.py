@@ -23,7 +23,7 @@ class TrainAugmentation(GetAug):
                 A.HorizontalFlip(),
                 A.Resize(*size),
                 A.Normalize(),
-                ConvertBboxFormat('pascal_voc', 'albumentations'),
+                ConvertBboxFormat(bbox_format, 'albumentations'),
                 ToTensor()
             ], bbox_format)
 
@@ -33,7 +33,7 @@ class TestTransform(GetAug):
         super(TestTransform, self).__init__([
                 A.Resize(*size),
                 A.Normalize(),
-                ConvertBboxFormat('pascal_voc', 'albumentations'),
+                ConvertBboxFormat(bbox_format, 'albumentations'),
                 ToTensor()
             ], bbox_format)
 
@@ -43,6 +43,5 @@ class PredictionTransform(GetAug):
         super(PredictionTransform, self).__init__([
                 A.Resize(*size),
                 A.Normalize(),
-                ConvertBboxFormat('pascal_voc', 'albumentations'),
                 ToTensor()
             ], bbox_format)
