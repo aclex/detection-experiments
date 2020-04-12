@@ -247,6 +247,8 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
+    os.makedirs(args.checkpoint_path, exist_ok=True)
+
     logging.info(f"Start training from epoch {last_epoch + 1}.")
     for epoch in range(last_epoch + 1, args.num_epochs):
         train(train_loader, net, criterion, optimizer, device=device, epoch=epoch)
