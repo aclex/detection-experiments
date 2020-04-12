@@ -131,9 +131,8 @@ def main():
 	parser.add_argument('--gamma', default=0.1, type=float,
 						help='gamma update for SGD')
 
-	# Params for loading pretrained basenet or checkpoints.
-	parser.add_argument('--base-net',
-						help='pretrained base model')
+	parser.add_argument('--backbone-weights',
+						help='pretrained weights for the backbone model')
 
 	# Scheduler
 	parser.add_argument('--scheduler', default="multi-step", type=str,
@@ -250,14 +249,11 @@ def main():
 
 	last_epoch = -1
 
-	base_net_lr = args.lr
-	extra_layers_lr = args.lr
-
 	params = [
-		{'params': net.base_net.parameters(), 'lr': base_net_lr},
+		{'params': net.backbone.parameters()},
 		{'params': itertools.chain(
 			net.extras.parameters()
-		), 'lr': extra_layers_lr},
+		)},
 		{'params': itertools.chain(
 			net.regression_headers.parameters(),
 			net.classification_headers.parameters()
@@ -265,9 +261,9 @@ def main():
 	]
 
 	timer.start("Load Model")
-	if args.base_net:
-		logging.info(f"Init from base net {args.base_net}")
-		net.init_from_base_net(args.base_net)
+	if args.backbone_weights:
+		logging.info(f"Load backbone weights from {args.backbone_weights}")
+		net.load_backbone_weights(args.backbone_weights)
 	logging.info(f'Took {timer.end("Load Model"):.2f} seconds to load the model.')
 
 	net.to(device)
@@ -277,8 +273,7 @@ def main():
 							 center_variance=0.1, size_variance=0.2)
 	optimizer = torch.optim.SGD(params, lr=args.lr, momentum=args.momentum,
 								weight_decay=args.weight_decay)
-	logging.info(f"Learning rate: {args.lr}, Base net learning rate: {base_net_lr}, "
-				 + f"Extra Layers learning rate: {extra_layers_lr}.")
+	logging.info(f"Learning rate: {args.lr}")
 
 	if args.scheduler == 'multi-step':
 		logging.info("Uses MultiStepLR scheduler.")
@@ -300,7 +295,7 @@ def main():
 		train(train_loader, net, criterion, optimizer, device=device, epoch=epoch)
 		scheduler.step()
 
-		if epoch % args.validation_epochs == 0 or epoch == args.num_epochs - 1:
+		if epoch % args.val_epochs == 0 or epoch == args.num_epochs - 1:
 			val_loss, val_regression_loss, val_classification_loss = test(val_loader, net, criterion, device)
 			logging.info(
 				f"Epoch: {epoch}, " +

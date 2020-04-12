@@ -12,17 +12,17 @@ from nn.separable_conv_2d import SeparableConv2d
 
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, base_net, arch_name, config=None):
+    def __init__(self, num_classes, backbone, arch_name, config=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
 
         self.num_classes = num_classes
-        self.base_net = base_net
+        self.backbone = backbone
         self.arch_name = arch_name
 
         self.extras = nn.ModuleList([
-            Block(3, self.base_net.out_channels[-1], 256, 512,
+            Block(3, self.backbone.out_channels[-1], 256, 512,
                   hswish(), None, stride=2),
             Block(3, 512, 128, 256, hswish(), None, stride=2),
             Block(3, 256, 128, 256, hswish(), None, stride=2),
@@ -30,10 +30,10 @@ class SSD(nn.Module):
         ])
 
         self.classification_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=self.base_net.out_channels[-2],
+            SeparableConv2d(in_channels=self.backbone.out_channels[-2],
                             out_channels=6 * num_classes,
                             kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=self.base_net.out_channels[-1],
+            SeparableConv2d(in_channels=self.backbone.out_channels[-1],
                             out_channels=6 * num_classes,
                             kernel_size=3, padding=1),
             SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
@@ -46,10 +46,10 @@ class SSD(nn.Module):
         ])
 
         self.regression_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=self.base_net.out_channels[-2],
+            SeparableConv2d(in_channels=self.backbone.out_channels[-2],
                             out_channels=6 * 4,
                             kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=self.base_net.out_channels[-1],
+            SeparableConv2d(in_channels=self.backbone.out_channels[-1],
                             out_channels=6 * 4, kernel_size=3,
                             padding=1, onnx_compatible=False),
             SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,
@@ -67,7 +67,7 @@ class SSD(nn.Module):
         confidences = []
         locations = []
 
-        cs = self.base_net.forward(x)
+        cs = self.backbone.forward(x)
 
         for i, c in enumerate(cs):
             confidence, location = self.compute_header(i, c)
@@ -116,31 +116,11 @@ class SSD(nn.Module):
 
         return confidence, location
 
-    def init_from_base_net(self, model):
-        self.base_net.load_state_dict(torch.load(model, map_location=lambda storage, loc: storage), strict=True)
+    def load_backbone_weights(self, path):
+        self.backbone.load_state_dict(
+            torch.load(path, map_location=lambda storage, loc: storage),
+            strict=True)
 
-    def load(self, model):
-        self.load_state_dict(torch.load(model, map_location=lambda storage, loc: storage))
-
-    def save(self, model_path):
-        torch.save(self.state_dict(), model_path)
-
-
-class MatchPrior(object):
-    def __init__(self, center_form_priors, center_variance, size_variance, iou_threshold):
-        self.center_form_priors = center_form_priors
-        self.corner_form_priors = box_utils.center_form_to_corner_form(center_form_priors)
-        self.center_variance = center_variance
-        self.size_variance = size_variance
-        self.iou_threshold = iou_threshold
-
-    def __call__(self, gt_boxes, gt_labels):
-        if type(gt_boxes) is np.ndarray:
-            gt_boxes = torch.from_numpy(gt_boxes)
-        if type(gt_labels) is np.ndarray:
-            gt_labels = torch.from_numpy(gt_labels)
-        boxes, labels = box_utils.assign_priors(gt_boxes, gt_labels,
-                                                self.corner_form_priors, self.iou_threshold)
-        boxes = box_utils.corner_form_to_center_form(boxes)
-        locations = box_utils.convert_boxes_to_locations(boxes, self.center_form_priors, self.center_variance, self.size_variance)
-        return locations, labels
+    def freeze_backbone(self):
+        for p in self.backbone.parameters():
+            p.requires_grad = False
