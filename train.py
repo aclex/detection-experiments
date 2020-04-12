@@ -104,20 +104,20 @@ def main():
 		description='Single Shot MultiBox Detector Training With Pytorch')
 
 	parser.add_argument('--dataset-style', type=str, required=True,
-						help="Style of dataset "
+						help="style of dataset "
 						"(supported are 'pascal-voc' and 'coco')")
-	parser.add_argument('--dataset', required=True, help='Dataset path')
+	parser.add_argument('--dataset', required=True, help='dataset path')
 	parser.add_argument('--train-image-set', type=str, default="train",
-						help='Image set (annotation file basename for COCO) '
+						help='image set (annotation file basename for COCO) '
 						'to use for training')
 	parser.add_argument('--val-image-set', type=str, default="val",
-						help='Image set (annotation file basename for COCO) '
+						help='image set (annotation file basename for COCO) '
 						'to use for validation')
 	parser.add_argument('--val-dataset', default=None,
-						help='Separate validation dataset directory path')
+						help='separate validation dataset directory path')
 
 	parser.add_argument('--net', default="mb3-small-ssd-lite",
-						help="Network architecture "
+						help="network architecture "
 						"(supported are mb3-large-ssd-lite and "
 						"mb3-small-ssd-lite)")
 
@@ -125,19 +125,19 @@ def main():
 	parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
 						help='initial learning rate')
 	parser.add_argument('--momentum', default=0.9, type=float,
-						help='Momentum value for optim')
+						help='momentum value for optim')
 	parser.add_argument('--weight-decay', default=5e-4, type=float,
-						help='Weight decay for SGD')
+						help='weight decay for SGD')
 	parser.add_argument('--gamma', default=0.1, type=float,
-						help='Gamma update for SGD')
+						help='gamma update for SGD')
 
 	# Params for loading pretrained basenet or checkpoints.
 	parser.add_argument('--base-net',
-						help='Pretrained base model')
+						help='pretrained base model')
 
 	# Scheduler
 	parser.add_argument('--scheduler', default="multi-step", type=str,
-						help="Scheduler for SGD. It can one of multi-step and cosine")
+						help="scheduler for SGD. It can one of multi-step and cosine")
 
 	# Params for Multi-step Scheduler
 	parser.add_argument('--milestones', default="80,100", type=str,
@@ -149,28 +149,32 @@ def main():
 
 	# Train params
 	parser.add_argument('--batch-size', default=32, type=int,
-						help='Batch size for training')
+						help='batch size')
 	parser.add_argument('--num-epochs', default=120, type=int,
-						help='the number epochs')
+						help='number of epochs to train')
 	parser.add_argument('--num-workers', default=4, type=int,
-						help='Number of workers used in dataloading')
-	parser.add_argument('--validation-epochs', default=5, type=int,
-						help='the number epochs')
-	parser.add_argument('--use-cuda', default=True, type=bool,
-						help='Use CUDA to train model')
+						help='number of workers used in dataloading')
+	parser.add_argument('--val-epochs', default=5, type=int,
+						help='perform validation every this many epochs')
+	parser.add_argument('--device', type=str,
+						help='device to use for training')
 
 	parser.add_argument('--checkpoint-path', default='output',
-						help='Directory for saving checkpoint models')
+						help='directory for saving checkpoint models')
 
 
 	logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 						format='%(asctime)s - %(levelname)s - %(message)s')
 
 	args = parser.parse_args()
-	device = torch.device("cuda" if torch.cuda.is_available() and args.use_cuda else "cpu")
 
-	if args.use_cuda and torch.cuda.is_available():
-		logging.info("Use Cuda.")
+	if args.device is None:
+		device = "cuda" if torch.cuda.is_available() else "cpu"
+	else:
+		device = args.device
+
+	if device.startswith("cuda"):
+		logging.info("Use CUDA")
 
 	timer = Timer()
 
