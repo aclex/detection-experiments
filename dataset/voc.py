@@ -89,7 +89,7 @@ class VOCDetection(Dataset):
 		image_id = self.ids[index]
 		image = self._read_image(image_id)
 		if self.transform:
-			image, _ = self.transform(image)
+			image, _ = self.transform(image=image)
 
 		return image
 
@@ -119,12 +119,12 @@ class VOCDetection(Dataset):
 
 		for object in objects:
 			class_name = object.find('name').text.lower().strip()
-			# we're only concerned with clases in our list
+			# we're only concerned with classes in our list
 			if class_name in self.class_dict:
 				bbox = object.find('bndbox')
 
 				# VOC dataset format follows Matlab,
-				# in which indexes start from 0
+				# in which indexes start from 1
 				x1 = float(bbox.find('xmin').text) - 1
 				y1 = float(bbox.find('ymin').text) - 1
 				x2 = float(bbox.find('xmax').text) - 1
