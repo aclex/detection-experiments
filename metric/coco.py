@@ -3,6 +3,8 @@ from pycocotools.cocoeval import COCOeval
 
 from transform.convert_bbox_format import ConvertBboxFormat
 
+from util.progress import interactive
+
 
 def create_coco_annotations(image_id, boxes, labels, scores, gt=False):
 	if not hasattr(create_coco_annotations, "ann_id"):
@@ -72,7 +74,7 @@ def eval(dataset, predictor):
 	bbox_converter = ConvertBboxFormat(source_format='pascal_voc',
 									   target_format='coco')
 
-	for i in range(len(dataset)):
+	for i in interactive(range(len(dataset))):
 		sample = dataset[i]
 		image = sample['image']
 		height, width = image.shape[:2]

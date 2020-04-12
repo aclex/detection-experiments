@@ -4,6 +4,8 @@ import torch
 
 from detector.ssd.utils import box_utils
 
+from util.progress import interactive
+
 
 def compute_average_precision(precision, recall):
     """
@@ -129,7 +131,7 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 		group_annotation_by_class(dataset)
 
 	results_per_class = dict()
-	for i in range(len(dataset)):
+	for i in interactive(range(len(dataset))):
 		image = dataset.get_image(i)
 		image_id = dataset.ids[i]
 		boxes, labels, probs = predictor.predict(image)
