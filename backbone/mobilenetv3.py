@@ -7,11 +7,16 @@ from backbone.feature_hook import FeatureHook
 
 class MobileNetV3_Large(outlet.MobileNetV3_Large):
     def __init__(self, **kwargs):
-        super(MobileNetV3_Small, self).__init__(**kwargs)
+        super(MobileNetV3_Large, self).__init__(**kwargs)
 
         self.c4 = FeatureHook()
 
         self.bneck[11].register_forward_hook(self.c4)
+
+        self.out_channels = [
+            self.bneck[11].bn3.num_features,
+            self.bn2.num_features
+        ]
 
     def forward(self, x):
         out = self.hs1(self.bn1(self.conv1(x)))
@@ -28,6 +33,11 @@ class MobileNetV3_Small(outlet.MobileNetV3_Small):
         self.c4 = FeatureHook()
 
         self.bneck[7].register_forward_hook(self.c4)
+
+        self.out_channels = [
+            self.bneck[7].bn3.num_features,
+            self.bn2.num_features
+        ]
 
     def forward(self, x):
         out = self.hs1(self.bn1(self.conv1(x)))

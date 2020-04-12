@@ -22,28 +22,42 @@ class SSD(nn.Module):
         self.arch_name = arch_name
 
         self.extras = nn.ModuleList([
-            Block(3, 576, 256, 512, hswish(), None, stride=2),
+            Block(3, self.base_net.out_channels[-1], 256, 512,
+                  hswish(), None, stride=2),
             Block(3, 512, 128, 256, hswish(), None, stride=2),
             Block(3, 256, 128, 256, hswish(), None, stride=2),
             Block(3, 256, 64, 64, hswish(), None, stride=2)
         ])
 
         self.classification_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=48, out_channels=6 * num_classes, kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=576, out_channels=6 * num_classes, kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=512, out_channels=6 * num_classes, kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
+            SeparableConv2d(in_channels=self.base_net.out_channels[-2],
+                            out_channels=6 * num_classes,
+                            kernel_size=3, padding=1),
+            SeparableConv2d(in_channels=self.base_net.out_channels[-1],
+                            out_channels=6 * num_classes,
+                            kernel_size=3, padding=1),
+            SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
+                            kernel_size=3, padding=1),
+            SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
+                            kernel_size=3, padding=1),
+            SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
+                            kernel_size=3, padding=1),
             nn.Conv2d(in_channels=64, out_channels=6 * num_classes, kernel_size=1),
         ])
 
         self.regression_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=48, out_channels=6 * 4,
+            SeparableConv2d(in_channels=self.base_net.out_channels[-2],
+                            out_channels=6 * 4,
                             kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=576, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
+            SeparableConv2d(in_channels=self.base_net.out_channels[-1],
+                            out_channels=6 * 4, kernel_size=3,
+                            padding=1, onnx_compatible=False),
+            SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,
+                            padding=1, onnx_compatible=False),
+            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
+                            padding=1, onnx_compatible=False),
+            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
+                            padding=1, onnx_compatible=False),
             nn.Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
         ])
 
