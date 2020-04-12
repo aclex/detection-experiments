@@ -133,6 +133,7 @@ def main():
 
 	parser.add_argument('--backbone-weights',
 						help='pretrained weights for the backbone model')
+	parser.add_argument('--freeze-backbone', action='store_true')
 
 	# Scheduler
 	parser.add_argument('--scheduler', default="multi-step", type=str,
@@ -166,6 +167,7 @@ def main():
 						format='%(asctime)s - %(levelname)s - %(message)s')
 
 	args = parser.parse_args()
+	logging.info(args)
 
 	if args.device is None:
 		device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -177,7 +179,6 @@ def main():
 
 	timer = Timer()
 
-	logging.info(args)
 	if args.net == 'mb3-large-ssd-lite':
 		create_net = lambda num: create_mobilenetv3_large_ssd_lite(num)
 
@@ -244,34 +245,26 @@ def main():
 							num_workers=args.num_workers,
 							shuffle=False)
 
-	logging.info("Build network.")
+	logging.info("Building network")
 	net = create_net(num_classes)
 
-	last_epoch = -1
-
-	params = [
-		{'params': net.backbone.parameters()},
-		{'params': itertools.chain(
-			net.extras.parameters()
-		)},
-		{'params': itertools.chain(
-			net.regression_headers.parameters(),
-			net.classification_headers.parameters()
-		)}
-	]
-
-	timer.start("Load Model")
 	if args.backbone_weights:
 		logging.info(f"Load backbone weights from {args.backbone_weights}")
+		timer.start("Loading backbone model")
 		net.load_backbone_weights(args.backbone_weights)
-	logging.info(f'Took {timer.end("Load Model"):.2f} seconds to load the model.')
+		logging.info(f'Took {timer.end("Loading backbone model"):.2f}s.')
+
+	if args.freeze_backbone:
+		net.freeze_backbone()
 
 	net.to(device)
+
+	last_epoch = -1
 
 	priors = config.priors.to(device=device, dtype=torch.float32)
 	criterion = MultiboxLoss(priors, iou_threshold=0.5, neg_pos_ratio=3,
 							 center_variance=0.1, size_variance=0.2)
-	optimizer = torch.optim.SGD(params, lr=args.lr, momentum=args.momentum,
+	optimizer = torch.optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
 								weight_decay=args.weight_decay)
 	logging.info(f"Learning rate: {args.lr}")
 
