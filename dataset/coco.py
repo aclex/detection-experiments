@@ -6,7 +6,6 @@ import os
 from torch.utils.data import Dataset
 
 
-
 class CocoDetection(Dataset):
 	def __init__(self, root, ann_file, transform=None):
 		"""Dataset for COCO data.

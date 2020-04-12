@@ -54,7 +54,6 @@ def main():
 	print(f"Found {len(probs)} objects. The output image is {path}")
 	cv2.waitKey(0)
 
-	cap.release()
 	cv2.destroyAllWindows()
 
 
