@@ -4,6 +4,7 @@ import argparse
 import cv2
 
 from detector.ssd.utils.misc import Timer
+
 from detector.ssd.mobilenetv3_ssd_lite import (
 	create_mobilenetv3_large_ssd_lite,
 	create_mobilenetv3_small_ssd_lite,
@@ -46,9 +47,7 @@ def main():
 		image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
 
 		timer.start()
-
 		boxes, labels, probs = predictor.predict(image, 10, 0.4)
-
 		interval = timer.end()
 		print('Time: {:.2f}s, Detect Objects: {:d}.'.format(interval, labels.size(0)))
 

@@ -1,5 +1,6 @@
 import sys
 import argparse
+import time
 
 import cv2
 
@@ -11,6 +12,8 @@ from detector.ssd.mobilenetv3_ssd_lite import (
 )
 
 from storage.util import load
+
+from detector.ssd.utils.misc import Timer
 
 
 def main():
@@ -32,7 +35,11 @@ def main():
 	orig_image = cv2.imread(args.image_path[0])
 	image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
 
+	timer = Timer()
+
+	timer.start("inference")
 	boxes, labels, probs = predictor.predict(image, 10, 0.4)
+	print("Inference time:", timer.end("inference"))
 
 	for i in range(boxes.size(0)):
 		box = boxes[i, :]
