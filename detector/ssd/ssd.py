@@ -21,8 +21,10 @@ class SSD(nn.Module):
         self.backbone = backbone
         self.arch_name = arch_name
 
+        feature_channels = self.backbone.feature_channels()
+
         self.extras = nn.ModuleList([
-            Block(3, self.backbone.out_channels[-1], 256, 512,
+            Block(3, feature_channels[-1], 256, 512,
                   hswish(), None, stride=2),
             Block(3, 512, 128, 256, hswish(), None, stride=2),
             Block(3, 256, 128, 256, hswish(), None, stride=2),
@@ -30,10 +32,10 @@ class SSD(nn.Module):
         ])
 
         self.classification_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=self.backbone.out_channels[-2],
+            SeparableConv2d(in_channels=feature_channels[-2],
                             out_channels=6 * num_classes,
                             kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=self.backbone.out_channels[-1],
+            SeparableConv2d(in_channels=feature_channels[-1],
                             out_channels=6 * num_classes,
                             kernel_size=3, padding=1),
             SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
@@ -46,10 +48,10 @@ class SSD(nn.Module):
         ])
 
         self.regression_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=self.backbone.out_channels[-2],
+            SeparableConv2d(in_channels=feature_channels[-2],
                             out_channels=6 * 4,
                             kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=self.backbone.out_channels[-1],
+            SeparableConv2d(in_channels=feature_channels[-1],
                             out_channels=6 * 4, kernel_size=3,
                             padding=1, onnx_compatible=False),
             SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,

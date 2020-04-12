@@ -13,17 +13,23 @@ class MobileNetV3_Large(outlet.MobileNetV3_Large):
 
         self.bneck[11].register_forward_hook(self.c4)
 
-        self.out_channels = [
-            self.bneck[11].bn3.num_features,
-            self.bn2.num_features
-        ]
-
     def forward(self, x):
         out = self.hs1(self.bn1(self.conv1(x)))
         out = self.bneck(out)
         out = self.hs2(self.bn2(self.conv2(out)))
 
         return self.c4.output, out # C4 and C5
+
+    def feature_channels(self, idx=None):
+        result = [
+            self.bneck[11].bn3.num_features,
+            self.bn2.num_features
+        ]
+
+        if isinstance(idx, int):
+            return result[idx]
+
+        return result
 
 
 class MobileNetV3_Small(outlet.MobileNetV3_Small):
@@ -34,14 +40,20 @@ class MobileNetV3_Small(outlet.MobileNetV3_Small):
 
         self.bneck[7].register_forward_hook(self.c4)
 
-        self.out_channels = [
-            self.bneck[7].bn3.num_features,
-            self.bn2.num_features
-        ]
-
     def forward(self, x):
         out = self.hs1(self.bn1(self.conv1(x)))
         out = self.bneck(out)
         out = self.hs2(self.bn2(self.conv2(out)))
 
         return self.c4.output, out # C4 and C5
+
+    def feature_channels(self, idx=None):
+        result = [
+            self.bneck[7].bn3.num_features,
+            self.bn2.num_features
+        ]
+
+        if isinstance(idx, int):
+            return result[idx]
+
+        return result
