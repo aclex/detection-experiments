@@ -118,15 +118,6 @@ class SSD(nn.Module):
 
     def init_from_base_net(self, model):
         self.base_net.load_state_dict(torch.load(model, map_location=lambda storage, loc: storage), strict=True)
-        self.extras.apply(_xavier_init_)
-        self.classification_headers.apply(_xavier_init_)
-        self.regression_headers.apply(_xavier_init_)
-
-    def init(self):
-        self.base_net.apply(_xavier_init_)
-        self.extras.apply(_xavier_init_)
-        self.classification_headers.apply(_xavier_init_)
-        self.regression_headers.apply(_xavier_init_)
 
     def load(self, model):
         self.load_state_dict(torch.load(model, map_location=lambda storage, loc: storage))
@@ -153,8 +144,3 @@ class MatchPrior(object):
         boxes = box_utils.corner_form_to_center_form(boxes)
         locations = box_utils.convert_boxes_to_locations(boxes, self.center_form_priors, self.center_variance, self.size_variance)
         return locations, labels
-
-
-def _xavier_init_(m: nn.Module):
-    if isinstance(m, nn.Conv2d):
-        nn.init.xavier_uniform_(m.weight)
