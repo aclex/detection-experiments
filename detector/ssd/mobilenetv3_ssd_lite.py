@@ -1,6 +1,6 @@
 import torch
 
-from backbone.mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
+from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
 
 from detector.ssd.ssd import SSD
 from detector.ssd.predictor import Predictor
