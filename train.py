@@ -131,6 +131,7 @@ def main():
 	parser.add_argument('--gamma', default=0.1, type=float,
 						help='gamma update for SGD')
 
+	parser.add_argument('--backbone-pretrained', action='store_true')
 	parser.add_argument('--backbone-weights',
 						help='pretrained weights for the backbone model')
 	parser.add_argument('--freeze-backbone', action='store_true')
@@ -180,10 +181,12 @@ def main():
 	timer = Timer()
 
 	if args.net == 'mb3-large-ssd-lite':
-		create_net = lambda num: create_mobilenetv3_large_ssd_lite(num)
+		create_net = lambda num, pretrained: \
+			create_mobilenetv3_large_ssd_lite(num, pretrained=pretrained)
 
 	elif args.net == 'mb3-small-ssd-lite':
-		create_net = lambda num: create_mobilenetv3_small_ssd_lite(num)
+		create_net = lambda num, pretrained: \
+			create_mobilenetv3_small_ssd_lite(num, pretrained=pretrained)
 
 	else:
 		logging.fatal("The net type is wrong.")
@@ -246,9 +249,10 @@ def main():
 							shuffle=False)
 
 	logging.info("Building network")
-	net = create_net(num_classes)
+	net = create_net(num_classes,
+					 pretrained=(args.backbone_pretrained is not None))
 
-	if args.backbone_weights:
+	if args.backbone_pretrained and args.backbone_weights is not None:
 		logging.info(f"Load backbone weights from {args.backbone_weights}")
 		timer.start("Loading backbone model")
 		net.load_backbone_weights(args.backbone_weights)

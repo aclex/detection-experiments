@@ -7,14 +7,14 @@ from detector.ssd.predictor import Predictor
 import detector.ssd.config as config
 
 
-def create_mobilenetv3_large_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False):
-    base_net = MobileNetV3_Large()
+def create_mobilenetv3_large_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False, pretrained=False):
+    base_net = MobileNetV3_Large(pretrained=pretrained)
 
     return SSD(num_classes, base_net, "mb3-large-ssd-lite", config=config)
 
 
-def create_mobilenetv3_small_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False):
-    base_net = MobileNetV3_Small()
+def create_mobilenetv3_small_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False, pretrained=False):
+    base_net = MobileNetV3_Small(pretrained=pretrained)
 
     return SSD(num_classes, base_net, "mb3-small-ssd-lite", config=config)
 

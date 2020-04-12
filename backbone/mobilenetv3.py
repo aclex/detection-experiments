@@ -7,6 +7,7 @@ from backbone.feature_hook import FeatureHook
 
 class MobileNetV3_Large(outlet.MobileNetV3_Large):
     def __init__(self, **kwargs):
+        kwargs.pop('pretrained')
         super(MobileNetV3_Large, self).__init__(**kwargs)
 
         self.c4 = FeatureHook()
@@ -34,6 +35,7 @@ class MobileNetV3_Large(outlet.MobileNetV3_Large):
 
 class MobileNetV3_Small(outlet.MobileNetV3_Small):
     def __init__(self, **kwargs):
+        kwargs.pop('pretrained')
         super(MobileNetV3_Small, self).__init__(**kwargs)
 
         self.c4 = FeatureHook()
