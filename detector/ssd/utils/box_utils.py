@@ -31,14 +31,15 @@ def generate_ssd_priors(specs: List[SSDSpec], image_size, clamp=True) -> torch.T
     """
     priors = []
     for spec in specs:
-        scale = image_size / spec.shrinkage
+        scale = [i / spec.shrinkage for i in image_size]
         for j, i in itertools.product(range(spec.feature_map_size), repeat=2):
-            x_center = (i + 0.5) / scale
-            y_center = (j + 0.5) / scale
+            x_center = (i + 0.5) / scale[0]
+            y_center = (j + 0.5) / scale[1]
 
             # small sized square box
             size = spec.box_sizes.min
-            h = w = size / image_size
+            w = size / image_size[0]
+            h = size / image_size[1]
             priors.append([
                 x_center,
                 y_center,
@@ -48,7 +49,8 @@ def generate_ssd_priors(specs: List[SSDSpec], image_size, clamp=True) -> torch.T
 
             # big sized square box
             size = math.sqrt(spec.box_sizes.max * spec.box_sizes.min)
-            h = w = size / image_size
+            w = size / image_size[0]
+            h = size / image_size[1]
             priors.append([
                 x_center,
                 y_center,
@@ -58,7 +60,8 @@ def generate_ssd_priors(specs: List[SSDSpec], image_size, clamp=True) -> torch.T
 
             # change h/w ratio of the small sized box
             size = spec.box_sizes.min
-            h = w = size / image_size
+            w = size / image_size[0]
+            h = size / image_size[1]
             for ratio in spec.aspect_ratios:
                 ratio = math.sqrt(ratio)
                 priors.append([
@@ -206,7 +209,7 @@ def hard_negative_mining(loss, labels, neg_pos_ratio):
 
 def center_form_to_corner_form(locations):
     return torch.cat([locations[..., :2] - locations[..., 2:]/2,
-                     locations[..., :2] + locations[..., 2:]/2], locations.dim() - 1) 
+                     locations[..., :2] + locations[..., 2:]/2], locations.dim() - 1)
 
 
 def corner_form_to_center_form(boxes):
@@ -290,6 +293,3 @@ def soft_nms(box_scores, score_threshold, sigma=0.5, top_k=-1):
         return torch.stack(picked_box_scores)
     else:
         return torch.tensor([])
-
-
-

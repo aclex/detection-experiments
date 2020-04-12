@@ -9,10 +9,9 @@ class Predictor:
                  filter_threshold=0.01, candidate_size=200, sigma=0.5,
                  device="cpu"):
         self.net = net
-        self.transform = PredictionTransform(
-            (net.config.image_size, net.config.image_size),
-            net.config.image_mean, net.config.image_std,
-            bbox_format='pascal_voc')
+        self.transform = PredictionTransform(net.config.image_size,
+                                             net.config.image_mean,
+                                             net.config.image_std)
         self.iou_threshold = iou_threshold
         self.filter_threshold = filter_threshold
         self.candidate_size = candidate_size

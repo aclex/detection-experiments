@@ -198,11 +198,11 @@ def main():
 		print("Dataset style %s is not supported" % args.dataset_style)
 		sys.exit(-1)
 
-	train_transform = TrainAugmentation((config.image_size, config.image_size),
+	train_transform = TrainAugmentation(config.image_size,
 										config.image_mean, config.image_std,
 										bbox_format=bbox_format)
 
-	test_transform = TestTransform((config.image_size, config.image_size),
+	test_transform = TestTransform(config.image_size,
 								   config.image_mean, config.image_std,
 								   bbox_format=bbox_format)
 
