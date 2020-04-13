@@ -6,7 +6,7 @@ import itertools
 
 import torch
 from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, MultiStepLR
 
 from detector.ssd.utils.misc import Timer
 from detector.ssd.mobilenetv3_ssd_lite import create_mobilenetv3_large_ssd_lite, create_mobilenetv3_small_ssd_lite
@@ -21,6 +21,9 @@ import detector.ssd.config as config
 from detector.ssd.data_preprocessing import TrainAugmentation, TestTransform
 
 from storage.util import save
+
+from optim.Ranger.ranger import Ranger
+from optim.diffgrad.diffgrad import DiffGrad
 
 
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -121,15 +124,12 @@ def main():
 						"(supported are mb3-large-ssd-lite and "
 						"mb3-small-ssd-lite)")
 
-	# Params for SGD
+	# Params for optimizer
+	parser.add_argument('--optimizer', default="ranger",
+						help="optimizer to use ('diffgrad', 'adamw', "
+						"or 'ranger')")
 	parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
 						help='initial learning rate')
-	parser.add_argument('--momentum', default=0.9, type=float,
-						help='momentum value for optim')
-	parser.add_argument('--weight-decay', default=5e-4, type=float,
-						help='weight decay for SGD')
-	parser.add_argument('--gamma', default=0.1, type=float,
-						help='gamma update for SGD')
 
 	parser.add_argument('--backbone-pretrained', action='store_true')
 	parser.add_argument('--backbone-weights',
@@ -137,16 +137,17 @@ def main():
 	parser.add_argument('--freeze-backbone', action='store_true')
 
 	# Scheduler
-	parser.add_argument('--scheduler', default="multi-step", type=str,
-						help="scheduler for SGD. It can one of multi-step and cosine")
+	parser.add_argument('--scheduler', default="cosine-wr", type=str,
+						help="scheduler for SGD. It can one of 'multi-step'"
+						"and 'cosine-wr'")
 
-	# Params for Multi-step Scheduler
+	# Params for Scheduler
 	parser.add_argument('--milestones', default="80,100", type=str,
 						help="milestones for MultiStepLR")
-
-	# Params for Cosine Annealing
-	parser.add_argument('--t-max', default=120, type=float,
-						help='T_max value for Cosine Annealing Scheduler.')
+	parser.add_argument('--t0', default=10, type=int,
+						help='T_0 value for Cosine Annealing Warm Restarts.')
+	parser.add_argument('--t-mult', default=2, type=float,
+						help='T_mult value for Cosine Annealing Warm Restarts.')
 
 	# Train params
 	parser.add_argument('--batch-size', default=32, type=int,
@@ -268,22 +269,27 @@ def main():
 	priors = config.priors.to(device=device, dtype=torch.float32)
 	criterion = MultiboxLoss(priors, iou_threshold=0.5, neg_pos_ratio=3,
 							 center_variance=0.1, size_variance=0.2)
-	optimizer = torch.optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
-								weight_decay=args.weight_decay)
+
+	if args.optimizer == "adamw":
+		optim_class = torch.optim.AdamW
+	elif args.optimizer == "diffgrad":
+		optim_class = DiffGrad
+	else:
+		optim_class = Ranger
+
+	optimizer = optim_class(net.parameters(), lr=args.lr)
 	logging.info(f"Learning rate: {args.lr}")
 
 	if args.scheduler == 'multi-step':
 		logging.info("Uses MultiStepLR scheduler.")
 		milestones = [int(v.strip()) for v in args.milestones.split(",")]
 		scheduler = MultiStepLR(optimizer, milestones=milestones,
-													 gamma=0.1, last_epoch=last_epoch)
-	elif args.scheduler == 'cosine':
-		logging.info("Uses CosineAnnealingLR scheduler.")
-		scheduler = CosineAnnealingLR(optimizer, args.t_max, last_epoch=last_epoch)
+								gamma=0.1, last_epoch=last_epoch)
 	else:
-		logging.fatal(f"Unsupported Scheduler: {args.scheduler}.")
-		parser.print_help(sys.stderr)
-		sys.exit(1)
+		logging.info("Uses Cosine annealing warm restarts scheduler.")
+		scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=args.t0,
+												T_mult=args.t_mult,
+												eta_min=1e-5)
 
 	os.makedirs(args.checkpoint_path, exist_ok=True)
 
