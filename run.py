@@ -3,6 +3,8 @@ import argparse
 
 import cv2
 
+import torch
+
 from detector.ssd.utils.misc import Timer
 
 from detector.ssd.mobilenetv3_ssd_lite import (
@@ -54,20 +56,30 @@ def main():
 						help="process on image")
 	parser.add_argument("--video", '-v', action='store_true',
 						help="process on video")
+	parser.add_argument('--device', type=str, help='device to use')
 	parser.add_argument("path", type=str, nargs='?',
 						help="file to process (use camera if omitted and "
 						"'--video' is set")
 
 	args = parser.parse_args()
 
+	if args.device is None:
+		device = "cuda" if torch.cuda.is_available() else "cpu"
+	else:
+		device = args.device
+
+	if device.startswith("cuda"):
+		logging.info("Use CUDA")
+
 	if args.image and args.video:
 		print("Can process either image or video, but not both")
 		sys.exit(-1)
 
-	model, class_names = load(args.model_path)
+	model, class_names = load(args.model_path, device=device)
 	model.eval()
 
-	predictor = create_mobilenetv3_ssd_lite_predictor(model, candidate_size=200)
+	predictor = create_mobilenetv3_ssd_lite_predictor(model, candidate_size=200,
+													  device=device)
 
 	timer = Timer()
 
