@@ -13,6 +13,7 @@ from detector.ssd.mobilenetv3_ssd_lite import (
 )
 
 from dataset.voc import VOCDetection
+from dataset.coco import CocoDetection
 
 from storage.util import load
 
@@ -25,6 +26,14 @@ def main():
 
 	parser.add_argument("--model-path", '-p', type=str, required=True,
 						help="path to the trained model")
+
+	parser.add_argument('--dataset-style', type=str, required=True,
+						help="style of dataset "
+						"(supported are 'pascal-voc' and 'coco')")
+
+	parser.add_argument('--image-set', type=str, default="test",
+						help='image set (annotation file basename for COCO) '
+						'to use for evaluation')
 
 	parser.add_argument("--dataset", type=str,
 						help="dataset directory path")
@@ -41,14 +50,30 @@ def main():
 						help="Use 2007 calculation algorithm "
 						"(for Pascal VOC metric)")
 
+	parser.add_argument('--device', type=str, help='device to use')
+
 	args = parser.parse_args()
+
+	if args.device is None:
+		device = "cuda" if torch.cuda.is_available() else "cpu"
+	else:
+		device = args.device
+
+	if device.startswith("cuda"):
+		logging.info("Use CUDA")
 
 	timer = Timer()
 
-	dataset = VOCDetection(root=args.dataset, year='2007', image_set='val')
+	if args.dataset_style == 'pascal-voc':
+		dataset = VOCDetection(root=args.dataset,
+							   image_set=args.image_set)
 
-	model, class_names = load(args.model_path)
-	model = model.to("cpu")
+	elif args.dataset_style == 'coco':
+		dataset = CocoDetection(root=args.dataset,
+								ann_file="%s.json" % args.image_set)
+
+
+	model, class_names = load(args.model_path, device=device)
 	model.eval()
 
 	if dataset.class_names != class_names:
@@ -58,14 +83,14 @@ def main():
 		sys.exit(-1)
 
 	predictor = create_mobilenetv3_ssd_lite_predictor(
-		model, nms_method=args.nms_method)
+		model, nms_method=args.nms_method, device=device)
 
 	if args.metric == 'pascal-voc':
-		print("Calculating Pascal VOC metric...")
+		logging.info("Calculating Pascal VOC metric...")
 		pascal_voc.eval(dataset, predictor, args.iou_threshold, args.use_2007)
 
 	elif args.metric == 'coco':
-		print("Calculating COCO metric...")
+		logging.info("Calculating COCO metric...")
 		coco.eval(dataset, predictor)
 
 	else:
