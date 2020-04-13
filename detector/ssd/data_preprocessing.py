@@ -17,31 +17,35 @@ class GetAug(A.Compose):
 class TrainAugmentation(GetAug):
     def __init__(self, size, mean, std, bbox_format='albumentations'):
         super(TrainAugmentation, self).__init__([
-                A.RandomContrast(),
-                A.RandomGamma(),
-                A.CLAHE(),
-                A.HorizontalFlip(),
-                A.Resize(*size),
-                A.Normalize(),
-                ConvertBboxFormat(bbox_format, 'albumentations'),
-                ToTensor()
-            ], bbox_format)
+            A.RandomContrast(),
+            A.RandomGamma(),
+            A.HueSaturationValue(sat_shift_limit=50, p=0.6),
+            A.CLAHE(),
+            A.ShiftScaleRotate(rotate_limit=0),
+            A.HorizontalFlip(),
+            A.Cutout(p=0.5),
+            A.RandomSizedBBoxSafeCrop(size[1], size[0], p=0.8),
+            A.Resize(size[1], size[0]),
+            A.Normalize(),
+            ConvertBboxFormat(bbox_format, 'albumentations'),
+            ToTensor()
+        ], bbox_format)
 
 
 class TestTransform(GetAug):
     def __init__(self, size, mean, std, bbox_format='albumentations'):
         super(TestTransform, self).__init__([
-                A.Resize(*size),
-                A.Normalize(),
-                ConvertBboxFormat(bbox_format, 'albumentations'),
-                ToTensor()
-            ], bbox_format)
+            A.Resize(size[1], size[0]),
+            A.Normalize(),
+            ConvertBboxFormat(bbox_format, 'albumentations'),
+            ToTensor()
+        ], bbox_format)
 
 
 class PredictionTransform(GetAug):
     def __init__(self, size, mean, std, bbox_format='albumentations'):
         super(PredictionTransform, self).__init__([
-                A.Resize(*size),
-                A.Normalize(),
-                ToTensor()
-            ], bbox_format)
+            A.Resize(size[1], size[0]),
+            A.Normalize(),
+            ToTensor()
+        ], bbox_format)
