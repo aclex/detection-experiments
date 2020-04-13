@@ -9,7 +9,11 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, MultiStepLR
 
 from detector.ssd.utils.misc import Timer
-from detector.ssd.mobilenetv3_ssd_lite import create_mobilenetv3_large_ssd_lite, create_mobilenetv3_small_ssd_lite
+from detector.ssd.mobilenetv3_ssd_lite import (
+	create_mobilenetv3_large_ssd_lite,
+	create_mobilenetv3_small_ssd_lite
+)
+
 from detector.ssd.multibox_loss import MultiboxLoss
 
 from dataset.voc import VOCDetection
@@ -33,8 +37,8 @@ def train(loader, net, criterion, optimizer, device, epoch=-1):
 	net.train(True)
 
 	running_loss = 0.0
-	running_regression_loss = 0.0
-	running_classification_loss = 0.0
+	running_reg_loss = 0.0
+	running_cls_loss = 0.0
 	num = 0
 
 	for i, data in enumerate(loader):
@@ -50,18 +54,18 @@ def train(loader, net, criterion, optimizer, device, epoch=-1):
 
 		optimizer.zero_grad()
 		confidence, locations = net(images)
-		regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
-		loss = regression_loss + classification_loss
+		reg_loss, cls_loss = criterion(confidence, locations, labels, boxes)
+		loss = reg_loss + cls_loss
 		loss.backward()
 		optimizer.step()
 
 		running_loss += loss.item()
-		running_regression_loss += regression_loss.item()
-		running_classification_loss += classification_loss.item()
+		running_reg_loss += reg_loss.item()
+		running_cls_loss += cls_loss.item()
 
 	avg_loss = running_loss / num
-	avg_reg_loss = running_regression_loss / num
-	avg_clf_loss = running_classification_loss / num
+	avg_reg_loss = running_reg_loss / num
+	avg_clf_loss = running_cls_loss / num
 
 	logging.info(
 		f"Epoch: {epoch}, Step: {i}, " +
@@ -75,8 +79,8 @@ def test(loader, net, criterion, device):
 	net.eval()
 
 	running_loss = 0.0
-	running_regression_loss = 0.0
-	running_classification_loss = 0.0
+	running_reg_loss = 0.0
+	running_cls_loss = 0.0
 	num = 0
 
 	for i, data in enumerate(loader):
@@ -92,14 +96,14 @@ def test(loader, net, criterion, device):
 
 		with torch.no_grad():
 			confidence, locations = net(images)
-			regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
-			loss = regression_loss + classification_loss
+			reg_loss, cls_loss = criterion(confidence, locations, labels, boxes)
+			loss = reg_loss + cls_loss
 
 		running_loss += loss.item()
-		running_regression_loss += regression_loss.item()
-		running_classification_loss += classification_loss.item()
+		running_reg_loss += reg_loss.item()
+		running_cls_loss += cls_loss.item()
 
-	return running_loss / num, running_regression_loss / num, running_classification_loss / num
+	return running_loss / num, running_reg_loss / num, running_cls_loss / num
 
 
 def main():
@@ -295,16 +299,18 @@ def main():
 
 	logging.info(f"Start training from epoch {last_epoch + 1}.")
 	for epoch in range(last_epoch + 1, args.num_epochs):
-		train(train_loader, net, criterion, optimizer, device=device, epoch=epoch)
+		train(train_loader, net, criterion,
+			  optimizer, device=device, epoch=epoch)
 		scheduler.step()
 
 		if epoch % args.val_epochs == 0 or epoch == args.num_epochs - 1:
-			val_loss, val_regression_loss, val_classification_loss = test(val_loader, net, criterion, device)
+			val_loss, val_reg_loss, val_cls_loss = test(val_loader, net,
+														criterion, device)
 			logging.info(
 				f"Epoch: {epoch}, " +
 				f"Validation Loss: {val_loss:.4f}, " +
-				f"Validation Regression Loss {val_regression_loss:.4f}, " +
-				f"Validation Classification Loss: {val_classification_loss:.4f}"
+				f"Validation Regression Loss {val_reg_loss:.4f}, " +
+				f"Validation Classification Loss: {val_cls_loss:.4f}"
 			)
 			filename = f"{args.net}-Epoch-{epoch}-Loss-{val_loss}.pth"
 			model_path = os.path.join(args.checkpoint_path, filename)
