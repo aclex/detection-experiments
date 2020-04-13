@@ -4,8 +4,7 @@
 	ignore = dirty
 [submodule "backbone/outlet/pytorch_image_models"]
 	path = backbone/outlet/pytorch_image_models
-	url = git@github.com:aclex/pytorch-image-models.git
-	branch = mobilenetv3_fix_feature_extraction
+	url = https://github.com/rwightman/pytorch-image-models
 [submodule "optim"]
 	path = optim
 	url = https://github.com/lessw2020/Best-Deep-Learning-Optimizers.git
