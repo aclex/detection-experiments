@@ -21,7 +21,6 @@ class TrainAugmentation(GetAug):
             A.RandomGamma(),
             A.HueSaturationValue(sat_shift_limit=50, p=0.6),
             A.CLAHE(),
-            A.ShiftScaleRotate(rotate_limit=0),
             A.HorizontalFlip(),
             A.Cutout(p=0.5),
             A.RandomSizedBBoxSafeCrop(size[1], size[0], p=0.8),
