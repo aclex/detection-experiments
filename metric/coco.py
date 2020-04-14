@@ -1,7 +1,7 @@
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from transform.convert_bbox_format import ConvertBboxFormat
+from transform.convert_bbox_format import BboxFormatConvert
 
 from util.progress import interactive
 
@@ -71,7 +71,7 @@ def eval(dataset, predictor):
 		"categories": gt_coco["categories"]
 	}
 
-	bbox_converter = ConvertBboxFormat(source_format='pascal_voc',
+	bbox_converter = BboxFormatConvert(source_format='pascal_voc',
 									   target_format='coco')
 
 	for i in interactive(range(len(dataset))):

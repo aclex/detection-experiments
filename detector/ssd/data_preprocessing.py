@@ -1,7 +1,7 @@
 import albumentations as A
 
 from transform.to_tensor import ToTensor
-from transform.convert_bbox_format import ConvertBboxFormat
+from transform.convert_bbox_format import BboxFormatConvert
 
 
 class GetAug(A.Compose):
@@ -27,7 +27,7 @@ class TrainAugmentation(GetAug):
             A.RandomSizedBBoxSafeCrop(size[1], size[0], p=0.8),
             A.Resize(size[1], size[0]),
             A.Normalize(),
-            ConvertBboxFormat(bbox_format, 'albumentations'),
+            BboxFormatConvert(bbox_format, 'albumentations'),
             ToTensor()
         ], bbox_format)
 
@@ -37,7 +37,7 @@ class TestTransform(GetAug):
         super(TestTransform, self).__init__([
             A.Resize(size[1], size[0]),
             A.Normalize(),
-            ConvertBboxFormat(bbox_format, 'albumentations'),
+            BboxFormatConvert(bbox_format, 'albumentations'),
             ToTensor()
         ], bbox_format)
 
