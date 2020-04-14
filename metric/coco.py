@@ -50,7 +50,7 @@ def create_coco_category(category_id, category_name):
 	}
 
 
-def eval(dataset, predictor, source_format):
+def eval(dataset, predictor):
 	gt_coco = {
 		"licenses": {
 			"name": "",
@@ -71,7 +71,7 @@ def eval(dataset, predictor, source_format):
 		"categories": gt_coco["categories"]
 	}
 
-	input_bbox_converter = BboxFormatConvert(source_format=source_format,
+	input_bbox_converter = BboxFormatConvert(source_format=dataset.bbox_format,
 											 target_format='coco')
 
 	output_bbox_converter = BboxFormatConvert(source_format='pascal_voc',

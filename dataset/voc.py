@@ -19,6 +19,7 @@ class VOCDetection(Dataset):
 		super(VOCDetection, self).__init__()
 
 		self.transform = transform
+		self.bbox_format = 'pascal_voc'
 
 		if year is not None:
 			infix = "VOC%s" % year

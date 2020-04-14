@@ -17,10 +17,11 @@ class CocoDetection(Dataset):
 
 		self.root = root
 		self.transform = transform
+		self.bbox_format = 'coco'
 
 		from pycocotools.coco import COCO
 		self.coco = COCO(self._get_abs_path(ann_file))
-		self._ids = list(sorted(self.coco.imgs.keys()))
+		self.ids = list(sorted(self.coco.imgs.keys()))
 
 		categories = self.coco.cats
 
@@ -32,7 +33,7 @@ class CocoDetection(Dataset):
 			self.class_ids.append(cat_id)
 
 	def __getitem__(self, index):
-		image_id = self._ids[index]
+		image_id = self.ids[index]
 		boxes, labels = self._get_annotation(image_id)
 
 		image = self._read_image(image_id)
@@ -49,7 +50,7 @@ class CocoDetection(Dataset):
 		return result
 
 	def get_image(self, index):
-		image_id = self._ids[index]
+		image_id = self.ids[index]
 		image = self._read_image(image_id)
 
 		if self.transform:
@@ -58,11 +59,11 @@ class CocoDetection(Dataset):
 		return image
 
 	def get_annotation(self, index):
-		image_id = self._ids[index]
+		image_id = self.ids[index]
 		return image_id, self._get_annotation(image_id)
 
 	def __len__(self):
-		return len(self._ids)
+		return len(self.ids)
 
 	def _get_annotation(self, image_id):
 		ann_ids = self.coco.getAnnIds(imgIds=image_id)
