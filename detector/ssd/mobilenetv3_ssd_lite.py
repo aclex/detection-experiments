@@ -23,6 +23,7 @@ def create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200, nms_method=No
     predictor = Predictor(net,
                           nms_method=nms_method,
                           iou_threshold=config.iou_threshold,
+                          filter_threshold=config.filter_threshold,
                           candidate_size=candidate_size,
                           sigma=sigma,
                           device=device)
