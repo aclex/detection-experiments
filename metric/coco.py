@@ -50,7 +50,7 @@ def create_coco_category(category_id, category_name):
 	}
 
 
-def eval(dataset, predictor):
+def eval(dataset, predictor, source_format):
 	gt_coco = {
 		"licenses": {
 			"name": "",
@@ -71,8 +71,11 @@ def eval(dataset, predictor):
 		"categories": gt_coco["categories"]
 	}
 
-	bbox_converter = BboxFormatConvert(source_format='pascal_voc',
-									   target_format='coco')
+	input_bbox_converter = BboxFormatConvert(source_format=source_format,
+											 target_format='coco')
+
+	output_bbox_converter = BboxFormatConvert(source_format='pascal_voc',
+											 target_format='coco')
 
 	for i in interactive(range(len(dataset))):
 		sample = dataset[i]
@@ -82,7 +85,7 @@ def eval(dataset, predictor):
 		image_record = create_coco_image_record(i, (width, height))
 		gt_coco["images"].append(image_record)
 
-		coco_sample = bbox_converter(**sample)
+		coco_sample = input_bbox_converter(**sample)
 		boxes = coco_sample['bboxes']
 		labels = coco_sample['category_id']
 		scores = [1 for _ in labels]
@@ -93,7 +96,7 @@ def eval(dataset, predictor):
 		boxes = [b.tolist() for b in boxes]
 		labels = labels.tolist()
 		probs = probs.tolist()
-		boxes = bbox_converter(image=image, bboxes=boxes)["bboxes"]
+		boxes = output_bbox_converter(image=image, bboxes=boxes)["bboxes"]
 
 		dt_anns = create_coco_annotations(i, boxes, labels, probs)
 		dt_coco["annotations"].extend(dt_anns)

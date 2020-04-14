@@ -65,10 +65,12 @@ def main():
 	timer = Timer()
 
 	if args.dataset_style == 'pascal-voc':
+		bbox_format = "pascal_voc"
 		dataset = VOCDetection(root=args.dataset,
 							   image_set=args.image_set)
 
 	elif args.dataset_style == 'coco':
+		bbox_format = "coco"
 		dataset = CocoDetection(root=args.dataset,
 								ann_file="%s.json" % args.image_set)
 
@@ -91,7 +93,7 @@ def main():
 
 	elif args.metric == 'coco':
 		logging.info("Calculating COCO metric...")
-		coco.eval(dataset, predictor)
+		coco.eval(dataset, predictor, bbox_format)
 
 	else:
 		print("Metric %s is not supported" % args.metric)
