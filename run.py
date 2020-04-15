@@ -57,6 +57,8 @@ def main():
 	parser.add_argument("--video", '-v', action='store_true',
 						help="process on video")
 	parser.add_argument('--device', type=str, help='device to use')
+	parser.add_argument('--output', '-o', type=str,
+						help="save the results to the specified file")
 	parser.add_argument("path", type=str, nargs='?',
 						help="file to process (use camera if omitted and "
 						"'--video' is set")
@@ -86,6 +88,10 @@ def main():
 	if args.image:
 		orig_image = cv2.imread(args.path)
 		predict_and_show(orig_image, predictor, class_names, timer)
+
+		if args.output is not None:
+			cv2.imwrite(orig_image, args.output)
+
 		cv2.waitKey(0)
 
 	elif args.video:
@@ -93,6 +99,15 @@ def main():
 			cap = cv2.VideoCapture(args.path)  # capture from file
 		else:
 			cap = cv2.VideoCapture(0)   # capture from camera
+
+		out = None
+
+		if args.output is not None:
+			frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+			frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+			fps = int(cap.get(cv2.CAP_PROP_FPS))
+			out = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*"mp4v"),
+								  fps, (frame_width, frame_height))
 
 		while True:
 			ret, orig_image = cap.read()
@@ -102,10 +117,17 @@ def main():
 
 			predict_and_show(orig_image, predictor, class_names, timer)
 
+			if out is not None:
+				print("writing to")
+				out.write(orig_image)
+
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				break
 
 		cap.release()
+
+		if out is not None:
+			out.release()
 
 	cv2.destroyAllWindows()
 
