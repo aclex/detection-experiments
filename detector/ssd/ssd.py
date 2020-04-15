@@ -6,8 +6,6 @@ import numpy as np
 
 from detector.ssd.utils import box_utils
 
-from backbone.mobilenetv3 import Block, hswish
-
 from nn.separable_conv_2d import SeparableConv2d
 
 
@@ -24,11 +22,14 @@ class SSD(nn.Module):
         feature_channels = self.backbone.feature_channels()
 
         self.extras = nn.ModuleList([
-            Block(3, feature_channels[-1], 256, 512,
-                  hswish(), None, stride=2),
-            Block(3, 512, 128, 256, hswish(), None, stride=2),
-            Block(3, 256, 128, 256, hswish(), None, stride=2),
-            Block(3, 256, 64, 64, hswish(), None, stride=2)
+            SeparableConv2d(in_channels=feature_channels[-1], out_channels=512,
+                            kernel_size=3, padding=1, stride=2),
+            SeparableConv2d(in_channels=512, out_channels=256,
+                            kernel_size=3, padding=1, stride=2),
+            SeparableConv2d(in_channels=256, out_channels=256,
+                            kernel_size=3, padding=1, stride=2),
+            SeparableConv2d(in_channels=256, out_channels=64,
+                            kernel_size=3, padding=1, stride=2),
         ])
 
         self.classification_headers = nn.ModuleList([
@@ -44,7 +45,8 @@ class SSD(nn.Module):
                             kernel_size=3, padding=1),
             SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
                             kernel_size=3, padding=1),
-            nn.Conv2d(in_channels=64, out_channels=6 * num_classes, kernel_size=1),
+            nn.Conv2d(in_channels=64, out_channels=6 * num_classes,
+                      kernel_size=1),
         ])
 
         self.regression_headers = nn.ModuleList([
