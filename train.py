@@ -229,9 +229,13 @@ def main():
 
 	logging.info("Train dataset size: {}".format(len(dataset)))
 
+	# don't allow the last batch be of length 1
+	# to not lead our dear BatchNorms to crash on that
+	drop_last = len(dataset) % args.batch_size == 1
+
 	train_loader = DataLoader(dataset, args.batch_size, collate_fn=collate,
 							  num_workers=args.num_workers,
-							  shuffle=True)
+							  shuffle=True, drop_last=drop_last)
 
 	if args.val_dataset is not None:
 		val_dataset_root = args.val_dataset
