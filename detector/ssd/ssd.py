@@ -10,7 +10,7 @@ from nn.separable_conv_2d import SeparableConv2d
 
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, backbone, arch_name, config=None):
+    def __init__(self, num_classes, backbone, arch_name, batch_size=None, config=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
@@ -18,6 +18,7 @@ class SSD(nn.Module):
         self.num_classes = num_classes
         self.backbone = backbone
         self.arch_name = arch_name
+        self.batch_size = batch_size # to ease the inference model
 
         feature_channels = self.backbone.feature_channels()
 
@@ -110,13 +111,15 @@ class SSD(nn.Module):
         return self.get_predictions(output)
 
     def compute_header(self, i, x):
+        batch_size = self.batch_size or x.size(0)
+
         confidence = self.classification_headers[i](x)
         confidence = confidence.permute(0, 2, 3, 1).contiguous()
-        confidence = confidence.view(confidence.size(0), -1, self.num_classes)
+        confidence = confidence.reshape(batch_size, -1, self.num_classes)
 
         location = self.regression_headers[i](x)
         location = location.permute(0, 2, 3, 1).contiguous()
-        location = location.view(location.size(0), -1, 4)
+        location = location.reshape(batch_size, -1, 4)
 
         return confidence, location
 

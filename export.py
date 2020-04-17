@@ -18,7 +18,7 @@ def main():
 
 	args = parser.parse_args()
 
-	model, class_names = load(args.model_path, device='cpu')
+	model, class_names = load(args.model_path, batch_size=1, device='cpu')
 	model.eval()
 
 	if args.output is None:
