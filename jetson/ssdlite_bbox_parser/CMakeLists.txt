@@ -10,3 +10,5 @@ set(DEEPSTREAM_SDK_PATH "/opt/nvidia/deepstream/deepstream-4.0" CACHE STRING "De
 
 find_package(TensorRT REQUIRED)
 find_package(DeepStream REQUIRED)
+
+add_subdirectory(src)
