@@ -28,8 +28,10 @@ def main():
 		if not output_path.endswith(".onnx"):
 			output_path += ".onnx"
 
-	dummy_input = torch.randn(1, 3, 300, 300)
-	torch.onnx.export(model, dummy_input, output_path, verbose=True, opset_version=7)
+	dummy_input = torch.randn(1, 3, 300, 300).to(dtype=torch.float32)
+	model.to(dtype=torch.float32)
+
+	torch.onnx.export(model, dummy_input, output_path, input_names=["img"], output_names=["cls", "loc"], opset_version=9, do_constant_folding=True, export_params=True, keep_initializers_as_inputs=True)
 
 
 if __name__ == "__main__":
