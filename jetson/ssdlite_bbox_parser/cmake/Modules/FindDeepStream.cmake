@@ -1,0 +1,6 @@
+find_path(DEEPSTREAM_INCLUDE_DIR nvdsinfer.h HINTS ${DEEPSTREAM_SDK_PATH}/sources PATH_SUFFIXES includes)
+if(${DEEPSTREAM_INCLUDE_DIR} MATCHES "DEEPSTREAM_INCLUDE_DIR-NOTFOUND")
+	message(FATAL_ERROR "-- Unable to find DeepStream SDK headers. Please set path using -DDEEPSTREAM_SDK_PATH")
+else()
+	message(STATUS "Found DeepStream SDK headers at ${DEEPSTREAM_INCLUDE_DIR}")
+endif()
