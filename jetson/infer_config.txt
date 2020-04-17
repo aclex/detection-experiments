@@ -10,7 +10,6 @@ batch-size=1
 network-mode=2
 num-detected-classes=21
 gie-unique-id=1
-nvbuf-memory-type=0
 is-classifier=0
 maintain-aspect-ratio=1
 output-blob-names=cls;loc

@@ -52,11 +52,28 @@ clock-text-size=12
 clock-color=1;0;0;0
 nvbuf-memory-type=0
 
+[streammux]
+gpu-id=0
+##Boolean property to inform muxer that sources are live
+live-source=0
+batch-size=1
+##time out in usec, to wait after the first buffer is available
+##to push the batch even if the complete batch is not formed
+batched-push-timeout=40000
+## Set muxer output width and height
+width=1920
+height=1080
+##Enable to maintain aspect ratio wrt source, and allow black borders, works
+##along with width, height properties
+enable-padding=0
+nvbuf-memory-type=0
+
 # config-file property is mandatory for any gie section.
 # Other properties are optional and if set will override the properties set in
 # the infer config file.
 [primary-gie]
 enable=1
+nvbuf-memory-type=0
 #Required by the app for OSD, not a plugin property
 bbox-border-color0=1;0;0;1
 bbox-border-color1=0;1;1;1
