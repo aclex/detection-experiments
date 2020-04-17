@@ -92,7 +92,7 @@ def eval(dataset, predictor):
 		gt_anns = create_coco_annotations(i, boxes, labels, scores)
 		gt_coco["annotations"].extend(gt_anns)
 
-		boxes, labels, probs = predictor.predict(image)
+		boxes, labels, probs = predictor.predict(image, prob_threshold=0)
 		boxes = [b.tolist() for b in boxes]
 		labels = labels.tolist()
 		probs = probs.tolist()

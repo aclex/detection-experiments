@@ -147,7 +147,7 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 	for i in interactive(range(len(dataset))):
 		image = dataset.get_image(i)
 		image_id = dataset.ids[i]
-		boxes, labels, probs = predictor.predict(image)
+		boxes, labels, probs = predictor.predict(image, prob_threshold=0)
 
 		for box, label, prob in zip(boxes, labels, probs):
 			if label.item() not in results_per_class:
