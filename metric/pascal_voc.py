@@ -106,6 +106,7 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 	false_positive = np.zeros(len(image_ids))
 	matched = set()
 
+	avg_ious = []
 	for i, image_id in enumerate(image_ids):
 		box = boxes[i]
 		if image_id not in gt_boxes:
@@ -114,6 +115,7 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 
 		gt_box = gt_boxes[image_id]
 		ious = box_utils.iou_of(box, gt_box)
+		avg_ious.append(ious)
 		max_iou = torch.max(ious).item()
 		max_arg = torch.argmax(ious).item()
 
@@ -127,6 +129,8 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 		else:
 			false_positive[i] = 1
 
+	avg_ious = torch.cat(avg_ious, dim=-1)
+
 	true_positive = true_positive.cumsum()
 	false_positive = false_positive.cumsum()
 
@@ -134,9 +138,11 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 	recall = true_positive / num_true_cases
 
 	if use_2007_metric:
-		return compute_voc2007_average_precision(precision, recall)
+		return compute_voc2007_average_precision(precision, recall), \
+			torch.mean(avg_ious).item()
 	else:
-		return compute_average_precision(precision, recall)
+		return compute_average_precision(precision, recall), \
+			torch.mean(avg_ious).item()
 
 
 def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
@@ -156,12 +162,13 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 			results_per_class[label.item()].append((image_id, box, prob))
 
 	aps = []
+	avg_ious = []
 	print("\n\nAverage Precision Per-class:")
 	for class_index, class_name in enumerate(dataset.class_names):
 		if class_index == 0:
 			continue
 
-		ap = compute_average_precision_per_class(
+		ap, avg_iou = compute_average_precision_per_class(
 			true_case_stat[class_index],
 			all_gb_boxes[class_index],
 			all_difficult_cases[class_index],
@@ -170,7 +177,8 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 			use_2007_metric
 		)
 		aps.append(ap)
+		avg_ious.append(avg_iou)
 
-		print(f"{class_name}: {ap}")
+		print(f"{class_name}: {ap} mean IOU: {avg_iou}")
 
 	print(f"\nAverage Precision Across All Classes:{sum(aps)/len(aps)}")
