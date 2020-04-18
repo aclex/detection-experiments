@@ -28,13 +28,13 @@ extern "C" bool NvDsInferParseCustomSSDLite(const std::vector<NvDsInferLayerInfo
 				std::cerr << "Number of classes in the configuration and returned from the model mismatch!" << std::endl;
 			}
 		}
-		else if (layer_info.layerName = "loc")
+		else if (layer_info.layerName == "loc")
 		{
 			loc_data = static_cast<float*>(layer_info.buffer);
 		}
 	}
 
-	objectList = ssdlite::parse_bboxes(cls_data, loc_data, threshold, nms_threshold, num_locations, networkInfo.width, networkInfo.height);
+	objectList = ssdlite::parse_bboxes(cls_data, loc_data, threshold, nms_threshold, num_locations, num_classes, networkInfo.width, networkInfo.height);
 
 	return true;
 }

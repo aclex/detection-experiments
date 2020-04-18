@@ -1,6 +1,7 @@
 #include "ssdlite_bbox_parser.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include <nvdsinfer.h>
 
@@ -17,8 +18,6 @@ namespace
 	{
 		NvDsInferObjectDetectionInfo result;
 
-		float *const curr_cls_begin { cls + i * num_classes }, *const curr_cls_end { cls + (i + 1) * num_classes };
-		float *const curr_loc_begin { loc + i * num_classes }, *const curr_loc_end { loc + (i + 1) * num_classes };
 		const auto it { max_element(cls_data, cls_data + num_classes) };
 
 		result.classId = static_cast<unsigned int>(it - cls_data);
@@ -75,14 +74,14 @@ namespace
 			}
 
 			if (keep)
-				result.push_back(i);
+				result.push_back(d);
 		}
 
 		return result;
 	}
 }
 
-vector<NvDsInferObjectDetectionInfo> ssdlite::parse_bboxes(float* const cls_data, float* const loc_data, const float threshold, const float nms_threshold, const unsigned int num_locations, const unsigned int num_classes)
+vector<NvDsInferObjectDetectionInfo> ssdlite::parse_bboxes(float* const cls_data, float* const loc_data, const float threshold, const float nms_threshold, const unsigned int num_locations, const unsigned int num_classes, const unsigned int width, const unsigned int height)
 {
 	vector<NvDsInferObjectDetectionInfo> result;
 	result.reserve(num_locations);
