@@ -2,9 +2,9 @@
 
 #include <nvdsinfer_custom_impl.h>
 
-#include "ssdlite_bbox_parser.h"
+#include "bbox_parser.h"
 
-extern "C" bool NvDsInferParseCustomSSDLite(const std::vector<NvDsInferLayerInfo>& outputLayersInfo, const NvDsInferNetworkInfo& networkInfo, const NvDsInferParseDetectionParams& detectionParams, std::vector<NvDsInferObjectDetectionInfo>& objectList)
+extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>& outputLayersInfo, const NvDsInferNetworkInfo& networkInfo, const NvDsInferParseDetectionParams& detectionParams, std::vector<NvDsInferObjectDetectionInfo>& objectList)
 {
 	float *cls_data, *loc_data;
 	unsigned int num_locations { };
@@ -34,9 +34,9 @@ extern "C" bool NvDsInferParseCustomSSDLite(const std::vector<NvDsInferLayerInfo
 		}
 	}
 
-	objectList = ssdlite::parse_bboxes(cls_data, loc_data, threshold, nms_threshold, num_locations, num_classes, networkInfo.width, networkInfo.height);
+	objectList = bbox_parser::parse_bboxes(cls_data, loc_data, threshold, nms_threshold, num_locations, num_classes, networkInfo.width, networkInfo.height);
 
 	return true;
 }
 
-CHECK_CUSTOM_PARSE_FUNC_PROTOTYPE(NvDsInferParseCustomSSDLite)
+CHECK_CUSTOM_PARSE_FUNC_PROTOTYPE(NvDsInferParseCustomBboxes)

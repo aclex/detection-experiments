@@ -1,4 +1,4 @@
-#include "ssdlite_bbox_parser.h"
+#include "bbox_parser.h"
 
 #include <algorithm>
 #include <cmath>
@@ -81,7 +81,7 @@ namespace
 	}
 }
 
-vector<NvDsInferObjectDetectionInfo> ssdlite::parse_bboxes(float* const cls_data, float* const loc_data, const float threshold, const float nms_threshold, const unsigned int num_locations, const unsigned int num_classes, const unsigned int width, const unsigned int height)
+vector<NvDsInferObjectDetectionInfo> bbox_parser::parse_bboxes(float* const cls_data, float* const loc_data, const float threshold, const float nms_threshold, const unsigned int num_locations, const unsigned int num_classes, const unsigned int width, const unsigned int height)
 {
 	vector<NvDsInferObjectDetectionInfo> result;
 	result.reserve(num_locations);

@@ -13,5 +13,5 @@ gie-unique-id=1
 is-classifier=0
 maintain-aspect-ratio=1
 output-blob-names=cls;loc
-parse-bbox-func-name=NvDsInferParseCustomSSDLite
-custom-lib-path=ssdlite_bbox_parser/build/src/libssdlite_bbox_parser.so
+parse-bbox-func-name=NvDsInferParseCustomBboxes
+custom-lib-path=bbox_parser/build/src/libbbox_parser.so
