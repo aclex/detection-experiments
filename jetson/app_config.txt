@@ -22,12 +22,24 @@ cudadec-memtype=0
 
 [sink0]
 enable=1
-# Type: 1 - FakeSink, 2 - EglSink, 3 - File
+# Type: 1 - FakeSink, 2 - EglSink, 3 - File, 4 - RTSPStreaming
 type=2
 sync=0
 source-id=0
 gpu-id=0
 nvbuf-memory-type=0
+
+[sink2]
+enable=0
+# Type: 1 - FakeSink, 2 - EglSink,  3 - File, 4 - RTSPStreaming
+type=4
+# Codec: 1 - H.264, 2 - H.265
+codec=1
+sync=1
+bitrate=4000000
+# Network settings for the case of RTSP streaming
+rtsp-port=8554
+udp-port=5400
 
 [osd]
 enable=1
