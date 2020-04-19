@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cstring>
 
 #include <nvdsinfer_custom_impl.h>
 
@@ -16,7 +16,7 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 
 	for (const auto& layer_info : outputLayersInfo)
 	{
-		if (layer_info.layerName == "cls")
+		if (!std::strcmp(layer_info.layerName, "cls"))
 		{
 			cls_data = static_cast<float*>(layer_info.buffer);
 
@@ -28,7 +28,7 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 				std::cerr << "Number of classes in the configuration and returned from the model mismatch!" << std::endl;
 			}
 		}
-		else if (layer_info.layerName == "loc")
+		else if (!std::strcmp(layer_info.layerName, "loc"))
 		{
 			loc_data = static_cast<float*>(layer_info.buffer);
 		}
