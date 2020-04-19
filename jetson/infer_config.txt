@@ -12,6 +12,6 @@ num-detected-classes=21
 gie-unique-id=1
 is-classifier=0
 maintain-aspect-ratio=1
-output-blob-names=cls;loc
+output-blob-names=cls;box
 parse-bbox-func-name=NvDsInferParseCustomBboxes
 custom-lib-path=bbox_parser/build/src/libbbox_parser.so

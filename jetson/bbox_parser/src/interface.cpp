@@ -28,7 +28,7 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 				std::cerr << "Number of classes in the configuration and returned from the model mismatch!" << std::endl;
 			}
 		}
-		else if (!std::strcmp(layer_info.layerName, "loc"))
+		else if (!std::strcmp(layer_info.layerName, "box"))
 		{
 			loc_data = static_cast<float*>(layer_info.buffer);
 		}
