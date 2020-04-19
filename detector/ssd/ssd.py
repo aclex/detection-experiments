@@ -12,148 +12,148 @@ from detector.ssd.to_predictions import ToPredictions
 
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, backbone, arch_name,
-                 batch_size=None, config=None):
-        """Compose a SSD model using the given components.
-        """
-        super(SSD, self).__init__()
+	def __init__(self, num_classes, backbone, arch_name,
+				 batch_size=None, config=None):
+		"""Compose a SSD model using the given components.
+		"""
+		super(SSD, self).__init__()
 
-        self.num_classes = num_classes
-        self.backbone = backbone
-        self.arch_name = arch_name
-        self.batch_size = batch_size # to ease the inference model
+		self.num_classes = num_classes
+		self.backbone = backbone
+		self.arch_name = arch_name
+		self.batch_size = batch_size # to ease the inference model
 
-        feature_channels = self.backbone.feature_channels()
+		feature_channels = self.backbone.feature_channels()
 
-        self.extras = nn.ModuleList([
-            SeparableConv2d(in_channels=feature_channels[-1], out_channels=512,
-                            kernel_size=3, padding=1, stride=2),
-            SeparableConv2d(in_channels=512, out_channels=256,
-                            kernel_size=3, padding=1, stride=2),
-            SeparableConv2d(in_channels=256, out_channels=256,
-                            kernel_size=3, padding=1, stride=2),
-            SeparableConv2d(in_channels=256, out_channels=64,
-                            kernel_size=3, padding=1, stride=2),
-        ])
+		self.extras = nn.ModuleList([
+			SeparableConv2d(in_channels=feature_channels[-1], out_channels=512,
+							kernel_size=3, padding=1, stride=2),
+			SeparableConv2d(in_channels=512, out_channels=256,
+							kernel_size=3, padding=1, stride=2),
+			SeparableConv2d(in_channels=256, out_channels=256,
+							kernel_size=3, padding=1, stride=2),
+			SeparableConv2d(in_channels=256, out_channels=64,
+							kernel_size=3, padding=1, stride=2),
+		])
 
-        self.classification_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=feature_channels[-2],
-                            out_channels=6 * num_classes,
-                            kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=feature_channels[-1],
-                            out_channels=6 * num_classes,
-                            kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
-                            kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
-                            kernel_size=3, padding=1),
-            SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
-                            kernel_size=3, padding=1),
-            nn.Conv2d(in_channels=64, out_channels=6 * num_classes,
-                      kernel_size=1),
-        ])
+		self.classification_headers = nn.ModuleList([
+			SeparableConv2d(in_channels=feature_channels[-2],
+							out_channels=6 * num_classes,
+							kernel_size=3, padding=1),
+			SeparableConv2d(in_channels=feature_channels[-1],
+							out_channels=6 * num_classes,
+							kernel_size=3, padding=1),
+			SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
+							kernel_size=3, padding=1),
+			SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
+							kernel_size=3, padding=1),
+			SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
+							kernel_size=3, padding=1),
+			nn.Conv2d(in_channels=64, out_channels=6 * num_classes,
+					  kernel_size=1),
+		])
 
-        self.regression_headers = nn.ModuleList([
-            SeparableConv2d(in_channels=feature_channels[-2],
-                            out_channels=6 * 4,
-                            kernel_size=3, padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=feature_channels[-1],
-                            out_channels=6 * 4, kernel_size=3,
-                            padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,
-                            padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
-                            padding=1, onnx_compatible=False),
-            SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
-                            padding=1, onnx_compatible=False),
-            nn.Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
-        ])
+		self.regression_headers = nn.ModuleList([
+			SeparableConv2d(in_channels=feature_channels[-2],
+							out_channels=6 * 4,
+							kernel_size=3, padding=1, onnx_compatible=False),
+			SeparableConv2d(in_channels=feature_channels[-1],
+							out_channels=6 * 4, kernel_size=3,
+							padding=1, onnx_compatible=False),
+			SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,
+							padding=1, onnx_compatible=False),
+			SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
+							padding=1, onnx_compatible=False),
+			SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
+							padding=1, onnx_compatible=False),
+			nn.Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
+		])
 
-        self.config = config
+		self.config = config
 
-    def forward(self, x):
-        confidences = []
-        locations = []
+	def forward(self, x):
+		confidences = []
+		locations = []
 
-        cs = self.backbone.forward(x)
+		cs = self.backbone.forward(x)
 
-        for i, c in enumerate(cs):
-            confidence, location = self.compute_header(i, c)
-            x = c
-            confidences.append(confidence)
-            locations.append(location)
+		for i, c in enumerate(cs):
+			confidence, location = self.compute_header(i, c)
+			x = c
+			confidences.append(confidence)
+			locations.append(location)
 
-        header_index = i + 1
+		header_index = i + 1
 
-        for layer in self.extras:
-            x = layer(x)
-            confidence, location = self.compute_header(header_index, x)
-            header_index += 1
-            confidences.append(confidence)
-            locations.append(location)
+		for layer in self.extras:
+			x = layer(x)
+			confidence, location = self.compute_header(header_index, x)
+			header_index += 1
+			confidences.append(confidence)
+			locations.append(location)
 
-        confidences = torch.cat(confidences, 1)
-        locations = torch.cat(locations, 1)
+		confidences = torch.cat(confidences, 1)
+		locations = torch.cat(locations, 1)
 
-        return confidences, locations
+		return confidences, locations
 
-    def get_predictions(self, output):
-        confidences, locations = output
+	def get_predictions(self, output):
+		confidences, locations = output
 
-        x = torch.cat([locations, confidences], dim=-1)
-        x = self.to_predictions.forward(x)
-        boxes, confidences = x[..., :4], x[..., 4:]
-        # confidences = F.softmax(confidences, dim=2)
-        # boxes = box_utils.convert_locations_to_boxes(
-        #     locations, self.config.priors,
-        #     self.config.center_variance, self.config.size_variance
-        # )
-        # boxes = box_utils.center_form_to_corner_form(boxes)
+		x = torch.cat([locations, confidences], dim=-1)
+		x = self.to_predictions.forward(x)
+		boxes, confidences = x[..., :4], x[..., 4:]
+		# confidences = F.softmax(confidences, dim=2)
+		# boxes = box_utils.convert_locations_to_boxes(
+		#	 locations, self.config.priors,
+		#	 self.config.center_variance, self.config.size_variance
+		# )
+		# boxes = box_utils.center_form_to_corner_form(boxes)
 
-        return confidences, boxes
+		return confidences, boxes
 
-    def predict(self, x):
-        output = self.forward(x)
-        return self.get_predictions(output)
+	def predict(self, x):
+		output = self.forward(x)
+		return self.get_predictions(output)
 
-    def compute_header(self, i, x):
-        batch_size = self.batch_size or x.size(0)
+	def compute_header(self, i, x):
+		batch_size = self.batch_size or x.size(0)
 
-        confidence = self.classification_headers[i](x)
-        confidence = confidence.permute(0, 2, 3, 1).contiguous()
-        confidence = confidence.reshape(batch_size, -1, self.num_classes)
+		confidence = self.classification_headers[i](x)
+		confidence = confidence.permute(0, 2, 3, 1).contiguous()
+		confidence = confidence.reshape(batch_size, -1, self.num_classes)
 
-        location = self.regression_headers[i](x)
-        location = location.permute(0, 2, 3, 1).contiguous()
-        location = location.reshape(batch_size, -1, 4)
+		location = self.regression_headers[i](x)
+		location = location.permute(0, 2, 3, 1).contiguous()
+		location = location.reshape(batch_size, -1, 4)
 
-        return confidence, location
+		return confidence, location
 
-    def load_backbone_weights(self, path):
-        self.backbone.load_state_dict(
-            torch.load(path, map_location=lambda storage, loc: storage),
-            strict=True)
+	def load_backbone_weights(self, path):
+		self.backbone.load_state_dict(
+			torch.load(path, map_location=lambda storage, loc: storage),
+			strict=True)
 
-    def freeze_backbone(self):
-        for p in self.backbone.parameters():
-            p.requires_grad = False
+	def freeze_backbone(self):
+		for p in self.backbone.parameters():
+			p.requires_grad = False
 
 
 class SSDInference(SSD):
-    def __init__(self, num_classes, backbone, arch_name,
-                 batch_size=None, config=None):
-        super(SSDInference, self).__init__(num_classes, backbone, arch_name,
-                                           batch_size, config)
+	def __init__(self, num_classes, backbone, arch_name,
+				 batch_size=None, config=None):
+		super(SSDInference, self).__init__(num_classes, backbone, arch_name,
+										   batch_size, config)
 
-        self.to_predictions = ToPredictions(self.config.priors,
-                                            self.config.center_variance,
-                                            self.config.size_variance)
+		self.to_predictions = ToPredictions(self.config.priors,
+											self.config.center_variance,
+											self.config.size_variance)
 
-    def forward(self, x):
-        confidences, locations = super(SSDInference, self).forward(x)
+	def forward(self, x):
+		confidences, locations = super(SSDInference, self).forward(x)
 
-        x = torch.cat([locations, confidences], dim=-1)
-        x = self.to_predictions.forward(x)
-        boxes, confidences = x[..., :4], x[..., 4:]
+		x = torch.cat([locations, confidences], dim=-1)
+		x = self.to_predictions.forward(x)
+		boxes, confidences = x[..., :4], x[..., 4:]
 
-        return confidences, boxes
+		return confidences, boxes
