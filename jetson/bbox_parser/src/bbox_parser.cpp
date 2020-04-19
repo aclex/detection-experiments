@@ -92,6 +92,9 @@ vector<NvDsInferObjectDetectionInfo> bbox_parser::parse_bboxes(float* const cls_
 	{
 		const auto& detection { parse_detection(cls_data + i * num_classes, loc_data + i * 4, num_classes, width, height) };
 
+		if (detection.classId == 0) // ignore background detections
+			continue;
+
 		if (detection.detectionConfidence >= threshold)
 			bboxes_per_class[detection.classId].push_back(detection);
 	}
