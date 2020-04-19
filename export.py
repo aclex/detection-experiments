@@ -18,7 +18,8 @@ def main():
 
 	args = parser.parse_args()
 
-	model, class_names = load(args.model_path, batch_size=1, device='cpu')
+	model, class_names = load(args.model_path, batch_size=1,
+							  inference=True, device='cpu')
 	model.eval()
 
 	if args.output is None:
@@ -31,7 +32,13 @@ def main():
 	dummy_input = torch.randn(1, 3, 300, 300).to(dtype=torch.float32)
 	model.to(dtype=torch.float32)
 
-	torch.onnx.export(model, dummy_input, output_path, input_names=["img"], output_names=["cls", "loc"], opset_version=9, do_constant_folding=True, export_params=True, keep_initializers_as_inputs=True)
+	torch.onnx.export(model, dummy_input, output_path,
+					  input_names=["img"],
+					  output_names=["cls", "box"],
+					  opset_version=9,
+					  do_constant_folding=True,
+					  export_params=True,
+					  keep_initializers_as_inputs=True)
 
 
 if __name__ == "__main__":

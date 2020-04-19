@@ -73,7 +73,8 @@ def main():
 								ann_file="%s.json" % args.image_set)
 
 
-	model, class_names = load(args.model_path, device=device)
+	model, class_names = load(args.model_path, device=device,
+							  inference=True)
 	model.eval()
 
 	if dataset.class_names != class_names:

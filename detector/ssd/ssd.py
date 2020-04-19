@@ -8,9 +8,12 @@ from detector.ssd.utils import box_utils
 
 from nn.separable_conv_2d import SeparableConv2d
 
+from detector.ssd.to_predictions import ToPredictions
+
 
 class SSD(nn.Module):
-    def __init__(self, num_classes, backbone, arch_name, batch_size=None, config=None):
+    def __init__(self, num_classes, backbone, arch_name,
+                 batch_size=None, config=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
@@ -97,12 +100,15 @@ class SSD(nn.Module):
     def get_predictions(self, output):
         confidences, locations = output
 
-        confidences = F.softmax(confidences, dim=2)
-        boxes = box_utils.convert_locations_to_boxes(
-            locations, self.config.priors,
-            self.config.center_variance, self.config.size_variance
-        )
-        boxes = box_utils.center_form_to_corner_form(boxes)
+        x = torch.cat([locations, confidences], dim=-1)
+        x = self.to_predictions.forward(x)
+        boxes, confidences = x[..., :4], x[..., 4:]
+        # confidences = F.softmax(confidences, dim=2)
+        # boxes = box_utils.convert_locations_to_boxes(
+        #     locations, self.config.priors,
+        #     self.config.center_variance, self.config.size_variance
+        # )
+        # boxes = box_utils.center_form_to_corner_form(boxes)
 
         return confidences, boxes
 
@@ -131,3 +137,23 @@ class SSD(nn.Module):
     def freeze_backbone(self):
         for p in self.backbone.parameters():
             p.requires_grad = False
+
+
+class SSDInference(SSD):
+    def __init__(self, num_classes, backbone, arch_name,
+                 batch_size=None, config=None):
+        super(SSDInference, self).__init__(num_classes, backbone, arch_name,
+                                           batch_size, config)
+
+        self.to_predictions = ToPredictions(self.config.priors,
+                                            self.config.center_variance,
+                                            self.config.size_variance)
+
+    def forward(self, x):
+        confidences, locations = super(SSDInference, self).forward(x)
+
+        x = torch.cat([locations, confidences], dim=-1)
+        x = self.to_predictions.forward(x)
+        boxes, confidences = x[..., :4], x[..., 4:]
+
+        return confidences, boxes
