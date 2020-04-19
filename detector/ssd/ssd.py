@@ -103,12 +103,6 @@ class SSD(nn.Module):
 		x = torch.cat([locations, confidences], dim=-1)
 		x = self.to_predictions.forward(x)
 		boxes, confidences = x[..., :4], x[..., 4:]
-		# confidences = F.softmax(confidences, dim=2)
-		# boxes = box_utils.convert_locations_to_boxes(
-		#	 locations, self.config.priors,
-		#	 self.config.center_variance, self.config.size_variance
-		# )
-		# boxes = box_utils.center_form_to_corner_form(boxes)
 
 		return confidences, boxes
 
@@ -151,9 +145,6 @@ class SSDInference(SSD):
 
 	def forward(self, x):
 		confidences, locations = super(SSDInference, self).forward(x)
-
-		x = torch.cat([locations, confidences], dim=-1)
-		x = self.to_predictions.forward(x)
-		boxes, confidences = x[..., :4], x[..., 4:]
+		confidences, boxes = self.to_predictions.forward(confidences, locations)
 
 		return confidences, boxes
