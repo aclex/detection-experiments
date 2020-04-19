@@ -37,7 +37,6 @@ def main():
 					  output_names=["cls", "box"],
 					  opset_version=9,
 					  do_constant_folding=True,
-					  export_params=True,
 					  keep_initializers_as_inputs=True)
 
 
