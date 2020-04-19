@@ -1,5 +1,7 @@
 [property]
 gpu-id=0
+net-scale-factor=0.0174 # stands for mean of common PyTorch's (0.229, 0.224, 0.225)
+offsets=124;116;104 # stands for common PyTorch's (0.485, 0.456, 0.406)
 # 0 - RGB, 1 - BGR
 model-color-format=0
 onnx-file=output.onnx
@@ -11,7 +13,6 @@ network-mode=2
 num-detected-classes=21
 gie-unique-id=1
 is-classifier=0
-maintain-aspect-ratio=1
 output-blob-names=cls;box
 parse-bbox-func-name=NvDsInferParseCustomBboxes
 custom-lib-path=bbox_parser/build/src/libbbox_parser.so
