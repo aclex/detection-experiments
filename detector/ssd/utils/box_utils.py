@@ -100,13 +100,10 @@ def convert_locations_to_boxes(locations, priors, center_variance,
 		boxes:  priors: [[center_x, center_y, h, w]]. All the values
 			are relative to the image size.
 	"""
-	# priors can have one dimension less.
-	if priors.dim() + 1 == locations.dim():
-		priors = priors.unsqueeze(0)
 	return torch.cat([
-		locations[..., :2] * center_variance * priors[..., 2:] + priors[..., :2],
-		torch.exp(locations[..., 2:] * size_variance) * priors[..., 2:]
-	], dim=locations.dim() - 1)
+		locations[..., 0:2] * center_variance * priors[..., 2:4] + priors[..., 0:2],
+		torch.exp(locations[..., 2:4] * size_variance) * priors[..., 2:4]
+	], dim=-1)
 
 
 def convert_boxes_to_locations(center_form_boxes, center_form_priors, center_variance, size_variance):
@@ -208,8 +205,10 @@ def hard_negative_mining(loss, labels, neg_pos_ratio):
 
 
 def center_form_to_corner_form(locations):
-	return torch.cat([locations[..., :2] - locations[..., 2:]/2,
-					 locations[..., :2] + locations[..., 2:]/2], locations.dim() - 1)
+	return torch.cat([
+		locations[..., 0:2] - locations[..., 2:4] / 2,
+		locations[..., 0:2] + locations[..., 2:4] / 2
+	], dim=-1)
 
 
 def corner_form_to_center_form(boxes):
