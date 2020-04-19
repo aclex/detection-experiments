@@ -6,7 +6,7 @@
 
 extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>& outputLayersInfo, const NvDsInferNetworkInfo& networkInfo, const NvDsInferParseDetectionParams& detectionParams, std::vector<NvDsInferObjectDetectionInfo>& objectList)
 {
-	float *cls_data, *loc_data;
+	const float *cls_data, *loc_data;
 	unsigned int num_locations { };
 	const unsigned int num_classes { detectionParams.numClassesConfigured };
 
@@ -18,7 +18,7 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 	{
 		if (!std::strcmp(layer_info.layerName, "cls"))
 		{
-			cls_data = static_cast<float*>(layer_info.buffer);
+			cls_data = static_cast<const float*>(layer_info.buffer);
 
 			if (!num_locations && layer_info.dims.numDims > 0)
 				num_locations = layer_info.dims.d[0];
@@ -30,7 +30,7 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 		}
 		else if (!std::strcmp(layer_info.layerName, "box"))
 		{
-			loc_data = static_cast<float*>(layer_info.buffer);
+			loc_data = static_cast<const float*>(layer_info.buffer);
 		}
 	}
 
