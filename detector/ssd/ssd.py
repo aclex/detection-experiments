@@ -97,19 +97,6 @@ class SSD(nn.Module):
 
 		return confidences, locations
 
-	def get_predictions(self, output):
-		confidences, locations = output
-
-		x = torch.cat([locations, confidences], dim=-1)
-		x = self.to_predictions.forward(x)
-		boxes, confidences = x[..., :4], x[..., 4:]
-
-		return confidences, boxes
-
-	def predict(self, x):
-		output = self.forward(x)
-		return self.get_predictions(output)
-
 	def compute_header(self, i, x):
 		batch_size = self.batch_size or x.size(0)
 

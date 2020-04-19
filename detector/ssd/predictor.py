@@ -64,4 +64,6 @@ class Predictor:
 		picked_box_probs[:, 1] *= height
 		picked_box_probs[:, 2] *= width
 		picked_box_probs[:, 3] *= height
-		return picked_box_probs[:, :4], torch.tensor(picked_labels), picked_box_probs[:, 4]
+		return (picked_box_probs[:, :4],
+				torch.tensor(picked_labels),
+				picked_box_probs[:, 4])
