@@ -16,3 +16,6 @@ is-classifier=0
 output-blob-names=cls;box
 parse-bbox-func-name=NvDsInferParseCustomBboxes
 custom-lib-path=bbox_parser/build/src/libbbox_parser.so
+
+[class-attrs-all]
+threshold=0.4
