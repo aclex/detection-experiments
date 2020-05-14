@@ -8,9 +8,9 @@ import detector.ssd.config as config
 
 
 def create_mobilenetv3_large_ssd_lite(num_classes,
-									  pretrained=False,
-									  batch_size=None,
-									  inference=False):
+                                      pretrained=False,
+                                      batch_size=None,
+                                      inference=False):
 	base_net = MobileNetV3_Large(pretrained=pretrained)
 
 	if not inference:
@@ -22,29 +22,29 @@ def create_mobilenetv3_large_ssd_lite(num_classes,
 
 
 def create_mobilenetv3_small_ssd_lite(num_classes,
-									  pretrained=False,
-									  batch_size=None,
-									  inference=False):
+                                      pretrained=False,
+                                      batch_size=None,
+                                      inference=False):
 	base_net = MobileNetV3_Small(pretrained=pretrained)
 
 	if not inference:
 		return SSD(num_classes, base_net, "mb3-small-ssd-lite",
-				   batch_size=batch_size, config=config)
+		           batch_size=batch_size, config=config)
 	else:
 		return SSDInference(num_classes, base_net, "mb3-small-ssd-lite",
-							batch_size=batch_size, config=config)
+		                    batch_size=batch_size, config=config)
 
 
 def create_mobilenetv3_ssd_lite_predictor(net, candidate_size=200,
-										  nms_method=None, sigma=0.5,
-										  device=torch.device('cpu')):
+                                          nms_method=None, sigma=0.5,
+                                          device=torch.device('cpu')):
 	predictor = Predictor(net,
-						  nms_method=nms_method,
-						  iou_threshold=config.iou_threshold,
-						  filter_threshold=config.filter_threshold,
-						  candidate_size=candidate_size,
-						  sigma=sigma,
-						  device=device)
+	                      nms_method=nms_method,
+	                      iou_threshold=config.iou_threshold,
+	                      filter_threshold=config.filter_threshold,
+	                      candidate_size=candidate_size,
+	                      sigma=sigma,
+	                      device=device)
 	return predictor
 
 

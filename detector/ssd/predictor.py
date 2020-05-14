@@ -6,12 +6,12 @@ from .data_preprocessing import PredictionTransform
 
 class Predictor:
 	def __init__(self, net, nms_method=None, iou_threshold=0.45,
-				 filter_threshold=0.01, candidate_size=200, sigma=0.5,
-				 device="cpu"):
+	             filter_threshold=0.01, candidate_size=200, sigma=0.5,
+	             device="cpu"):
 		self.net = net
 		self.transform = PredictionTransform(net.config.image_size,
-											 net.config.image_mean,
-											 net.config.image_std)
+		                                     net.config.image_mean,
+		                                     net.config.image_std)
 		self.iou_threshold = iou_threshold
 		self.filter_threshold = filter_threshold
 		self.candidate_size = candidate_size
@@ -50,11 +50,11 @@ class Predictor:
 			subset_boxes = boxes[mask, :]
 			box_probs = torch.cat([subset_boxes, probs.reshape(-1, 1)], dim=1)
 			box_probs = box_utils.nms(box_probs, self.nms_method,
-									  score_threshold=prob_threshold,
-									  iou_threshold=self.iou_threshold,
-									  sigma=self.sigma,
-									  top_k=top_k,
-									  candidate_size=self.candidate_size)
+			                          score_threshold=prob_threshold,
+			                          iou_threshold=self.iou_threshold,
+			                          sigma=self.sigma,
+			                          top_k=top_k,
+			                          candidate_size=self.candidate_size)
 			picked_box_probs.append(box_probs)
 			picked_labels.extend([class_index] * box_probs.size(0))
 		if not picked_box_probs:

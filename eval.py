@@ -25,30 +25,29 @@ def main():
 		description="Calculate Pascal VOC evaluation metrics")
 
 	parser.add_argument("--model-path", '-p', type=str, required=True,
-						help="path to the trained model")
+	                    help="path to the trained model")
 
 	parser.add_argument('--dataset-style', type=str, required=True,
-						help="style of dataset "
-						"(supported are 'pascal-voc' and 'coco')")
+	                    help="style of dataset "
+	                    "(supported are 'pascal-voc' and 'coco')")
 
 	parser.add_argument('--image-set', type=str, default="test",
-						help='image set (annotation file basename for COCO) '
-						'to use for evaluation')
+	                    help='image set (annotation file basename for COCO) '
+	                    'to use for evaluation')
 
-	parser.add_argument("--dataset", type=str,
-						help="dataset directory path")
+	parser.add_argument("--dataset", type=str, help="dataset directory path")
 
 	parser.add_argument("--metric", '-m', type=str, default='pascal-voc',
-						help="metric to calculate ('pascal-voc' or 'coco')")
+	                    help="metric to calculate ('pascal-voc' or 'coco')")
 
 	parser.add_argument("--nms_method", type=str, default="hard")
 
 	parser.add_argument("--iou_threshold", type=float, default=0.5,
-						help="IOU threshold (for Pascal VOC metric)")
+	                    help="IOU threshold (for Pascal VOC metric)")
 
 	parser.add_argument("--use-2007", action='store_true',
-						help="Use 2007 calculation algorithm "
-						"(for Pascal VOC metric)")
+	                    help="Use 2007 calculation algorithm "
+	                    "(for Pascal VOC metric)")
 
 	parser.add_argument('--device', type=str, help='device to use')
 
@@ -66,21 +65,21 @@ def main():
 
 	if args.dataset_style == 'pascal-voc':
 		dataset = VOCDetection(root=args.dataset,
-							   image_set=args.image_set)
+		                       image_set=args.image_set)
 
 	elif args.dataset_style == 'coco':
 		dataset = CocoDetection(root=args.dataset,
-								ann_file="%s.json" % args.image_set)
+		                        ann_file="%s.json" % args.image_set)
 
 
 	model, class_names = load(args.model_path, device=device,
-							  inference=True)
+	                          inference=True)
 	model.eval()
 
 	if dataset.class_names != class_names:
 		print("Dataset classes don't match the classes "
-			  "the specified model is trained with. "
-			  "No chance to get valid results, so I give up.")
+		      "the specified model is trained with. "
+		      "No chance to get valid results, so I give up.")
 		sys.exit(-1)
 
 	predictor = create_mobilenetv3_ssd_lite_predictor(

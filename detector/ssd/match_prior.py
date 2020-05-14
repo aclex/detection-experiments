@@ -7,7 +7,7 @@ from .utils import box_utils
 
 class MatchPrior(object):
 	def __init__(self, center_form_priors,
-				 center_variance, size_variance, iou_threshold):
+	             center_variance, size_variance, iou_threshold):
 		self.center_form_priors = center_form_priors
 		self.corner_form_priors = box_utils.center_form_to_corner_form(
 			center_form_priors)

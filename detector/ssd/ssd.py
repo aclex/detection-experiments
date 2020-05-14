@@ -13,7 +13,7 @@ from detector.ssd.to_predictions import ToPredictions
 
 class SSD(nn.Module):
 	def __init__(self, num_classes, backbone, arch_name,
-				 batch_size=None, config=None):
+	             batch_size=None, config=None):
 		"""Compose a SSD model using the given components.
 		"""
 		super(SSD, self).__init__()
@@ -27,45 +27,45 @@ class SSD(nn.Module):
 
 		self.extras = nn.ModuleList([
 			SeparableConv2d(in_channels=feature_channels[-1], out_channels=512,
-							kernel_size=3, padding=1, stride=2),
+			                kernel_size=3, padding=1, stride=2),
 			SeparableConv2d(in_channels=512, out_channels=256,
-							kernel_size=3, padding=1, stride=2),
+			                kernel_size=3, padding=1, stride=2),
 			SeparableConv2d(in_channels=256, out_channels=256,
-							kernel_size=3, padding=1, stride=2),
+			                kernel_size=3, padding=1, stride=2),
 			SeparableConv2d(in_channels=256, out_channels=64,
-							kernel_size=3, padding=1, stride=2),
+			                kernel_size=3, padding=1, stride=2),
 		])
 
 		self.classification_headers = nn.ModuleList([
 			SeparableConv2d(in_channels=feature_channels[-2],
-							out_channels=6 * num_classes,
-							kernel_size=3, padding=1),
+			                out_channels=6 * num_classes,
+			                kernel_size=3, padding=1),
 			SeparableConv2d(in_channels=feature_channels[-1],
-							out_channels=6 * num_classes,
-							kernel_size=3, padding=1),
+			                out_channels=6 * num_classes,
+			                kernel_size=3, padding=1),
 			SeparableConv2d(in_channels=512, out_channels=6 * num_classes,
-							kernel_size=3, padding=1),
+			                kernel_size=3, padding=1),
 			SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
-							kernel_size=3, padding=1),
+			                kernel_size=3, padding=1),
 			SeparableConv2d(in_channels=256, out_channels=6 * num_classes,
-							kernel_size=3, padding=1),
+			                kernel_size=3, padding=1),
 			nn.Conv2d(in_channels=64, out_channels=6 * num_classes,
-					  kernel_size=1),
+			          kernel_size=1),
 		])
 
 		self.regression_headers = nn.ModuleList([
 			SeparableConv2d(in_channels=feature_channels[-2],
-							out_channels=6 * 4,
-							kernel_size=3, padding=1, onnx_compatible=False),
+			                out_channels=6 * 4,
+			                kernel_size=3, padding=1, onnx_compatible=False),
 			SeparableConv2d(in_channels=feature_channels[-1],
-							out_channels=6 * 4, kernel_size=3,
-							padding=1, onnx_compatible=False),
+			                out_channels=6 * 4, kernel_size=3,
+			                padding=1, onnx_compatible=False),
 			SeparableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3,
-							padding=1, onnx_compatible=False),
+			                padding=1, onnx_compatible=False),
 			SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
-							padding=1, onnx_compatible=False),
+			                padding=1, onnx_compatible=False),
 			SeparableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3,
-							padding=1, onnx_compatible=False),
+			                padding=1, onnx_compatible=False),
 			nn.Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
 		])
 
@@ -122,13 +122,13 @@ class SSD(nn.Module):
 
 class SSDInference(SSD):
 	def __init__(self, num_classes, backbone, arch_name,
-				 batch_size=None, config=None):
+	             batch_size=None, config=None):
 		super(SSDInference, self).__init__(num_classes, backbone, arch_name,
-										   batch_size, config)
+		                                   batch_size, config)
 
 		self.to_predictions = ToPredictions(self.config.priors,
-											self.config.center_variance,
-											self.config.size_variance)
+		                                    self.config.center_variance,
+		                                    self.config.size_variance)
 
 	def forward(self, x):
 		confidences, locations = super(SSDInference, self).forward(x)

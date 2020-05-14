@@ -10,7 +10,7 @@ from .utils import box_utils
 
 class MultiboxLoss(nn.Module):
 	def __init__(self, priors, iou_threshold, neg_pos_ratio,
-				 center_variance, size_variance):
+	             center_variance, size_variance):
 		"""Implement SSD Multibox Loss.
 
 		Basically, Multibox loss combines classification loss
@@ -24,9 +24,9 @@ class MultiboxLoss(nn.Module):
 		self.size_variance = size_variance
 
 		self.match_prior = MatchPrior(priors,
-									  config.center_variance,
-									  config.size_variance,
-									  iou_threshold=0.5)
+		                              config.center_variance,
+		                              config.size_variance,
+		                              iou_threshold=0.5)
 
 		self.priors = priors
 

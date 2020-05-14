@@ -34,19 +34,20 @@ class BboxFormatConvert(A.DualTransform):
 	"""
 
 	def __init__(self, source_format, target_format, check_validity=False,
-				 always_apply=True, p=1.0):
+	             always_apply=True, p=1.0):
 		super(BboxFormatConvert, self).__init__(always_apply, p)
 
-		if source_format not in {"pascal_voc", "coco",
-								 "albumentations", "yolo"}:
+		if source_format not in {
+				"pascal_voc", "coco", "albumentations", "yolo" }:
 			raise ValueError(
 				"Unknown source_format {}. Supported formats are: 'coco', "
 				"'pascal_voc', 'albumentations' and 'yolo'".format(
 					target_format)
 			)
 
-		if target_format not in {"pascal_voc", "coco",
-								 "albumentations", "yolo"}:
+		if target_format not in {
+				"pascal_voc", "coco",
+				"albumentations", "yolo" }:
 			raise ValueError(
 				"Unknown target_format {}. Supported formats are: 'coco', "
 				"'pascal_voc', 'albumentations' and 'yolo'".format(
@@ -102,7 +103,7 @@ class BboxFormatConvert(A.DualTransform):
 			_bbox = np.array(bbox[:4])
 			if np.any((_bbox <= 0) | (_bbox > 1)):
 				raise ValueError("In YOLO format all labels must be float "
-								 "and in range (0, 1]")
+				                 "and in range (0, 1]")
 
 			x, y, width, height = np.round(denormalize_bbox(bbox, rows, cols))
 
@@ -124,7 +125,7 @@ class BboxFormatConvert(A.DualTransform):
 			_bbox, tail = np.array(bbox[:4]), bbox[4:]
 			if np.any((_bbox <= 0) | (_bbox > 1)):
 				raise ValueError("In YOLO format all labels must be float "
-								 "and in range (0, 1]")
+				                 "and in range (0, 1]")
 
 			x, y, width, height = np.round(denormalize_bbox(bbox, rows, cols))
 

@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 class VOCDetection(Dataset):
 	def __init__(self, root, year=None, image_set='train', label_file=None,
-				 transform=None, keep_difficult=False):
+	             transform=None, keep_difficult=False):
 		"""Dataset for VOC data.
 		Args:
 			root: the root of the VOC-style dataset, the directory contains the
@@ -29,7 +29,7 @@ class VOCDetection(Dataset):
 		self.root = os.path.join(root, infix)
 
 		image_sets_file = os.path.join(self.root, "ImageSets", "Main",
-									   "%s.txt" % image_set)
+		                               "%s.txt" % image_set)
 
 		self.ids = self._read_image_ids(image_sets_file)
 		self.keep_difficult = keep_difficult
@@ -62,8 +62,8 @@ class VOCDetection(Dataset):
 			'motorbike', 'person', 'pottedplant',
 			'sheep', 'sofa', 'train', 'tvmonitor')
 
-		self.class_dict = { class_name: i
-							for i, class_name in enumerate(self.class_names) }
+		self.class_dict = {
+			class_name: i for i, class_name in enumerate(self.class_names) }
 
 	def __getitem__(self, index):
 		image_id = self.ids[index]
@@ -111,7 +111,7 @@ class VOCDetection(Dataset):
 
 	def _get_annotation(self, image_id):
 		annotation_file = os.path.join(self.root, "Annotations",
-									   f"{image_id}.xml")
+		                               f"{image_id}.xml")
 		objects = ET.parse(annotation_file).findall("object")
 
 		boxes = []
@@ -135,7 +135,7 @@ class VOCDetection(Dataset):
 				labels.append(self.class_dict[class_name])
 				is_difficult_str = object.find('difficult').text
 				is_difficult.append(int(is_difficult_str)
-									if is_difficult_str else 0)
+				                    if is_difficult_str else 0)
 
 		return boxes, labels, is_difficult
 

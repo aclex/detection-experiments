@@ -73,8 +73,8 @@ class CocoDetection(Dataset):
 		labels = []
 
 		for object in objects:
-				boxes.append(object['bbox'])
-				labels.append(self.class_ids.index(object['category_id']))
+			boxes.append(object['bbox'])
+			labels.append(self.class_ids.index(object['category_id']))
 
 		return boxes, labels
 

@@ -35,7 +35,7 @@ def main():
 	model = MobileNetV3_Small()
 
 	pack_path = os.path.join("backbone", "outlet", "mobilenetv3",
-							 "mbv3_small.pth.tar")
+	                         "mbv3_small.pth.tar")
 
 	pack = torch.load(pack_path, map_location="cpu")
 	state_dict = process_state_dict(pack["state_dict"], mobilenetv3_key_rename)
@@ -47,12 +47,12 @@ def main():
 
 	results = torch.topk(v, dim=-1, k=5)
 	results = (results.values.squeeze().tolist(),
-			   results.indices.squeeze().tolist())
+	           results.indices.squeeze().tolist())
 
 	print("Top-5 results:")
 	for i, r in enumerate(zip(*results)):
 		print("%d. \"%s\", score: %.03f" %
-			  (i + 1, IMAGENET_1000_CLASSES[r[1]], r[0]))
+		      (i + 1, IMAGENET_1000_CLASSES[r[1]], r[0]))
 
 
 if __name__ == "__main__":

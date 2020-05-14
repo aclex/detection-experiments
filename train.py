@@ -111,66 +111,66 @@ def main():
 		description='Single Shot MultiBox Detector Training With Pytorch')
 
 	parser.add_argument('--dataset-style', type=str, required=True,
-						help="style of dataset "
-						"(supported are 'pascal-voc' and 'coco')")
+	                    help="style of dataset "
+	                    "(supported are 'pascal-voc' and 'coco')")
 	parser.add_argument('--dataset', required=True, help='dataset path')
 	parser.add_argument('--train-image-set', type=str, default="train",
-						help='image set (annotation file basename for COCO) '
-						'to use for training')
+	                    help='image set (annotation file basename for COCO) '
+	                    'to use for training')
 	parser.add_argument('--val-image-set', type=str, default="val",
-						help='image set (annotation file basename for COCO) '
-						'to use for validation')
+	                    help='image set (annotation file basename for COCO) '
+	                    'to use for validation')
 	parser.add_argument('--val-dataset', default=None,
-						help='separate validation dataset directory path')
+	                    help='separate validation dataset directory path')
 
 	parser.add_argument('--net', default="mb3-small-ssd-lite",
-						help="network architecture "
-						"(supported are mb3-large-ssd-lite and "
-						"mb3-small-ssd-lite)")
+	                    help="network architecture "
+	                    "(supported are mb3-large-ssd-lite and "
+	                    "mb3-small-ssd-lite)")
 
 	# Params for optimizer
 	parser.add_argument('--optimizer', default="ranger",
-						help="optimizer to use ('diffgrad', 'adamw', "
-						"or 'ranger')")
+	                    help="optimizer to use ('diffgrad', 'adamw', "
+	                    "or 'ranger')")
 	parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
-						help='initial learning rate')
+	                    help='initial learning rate')
 
 	parser.add_argument('--backbone-pretrained', action='store_true')
 	parser.add_argument('--backbone-weights',
-						help='pretrained weights for the backbone model')
+	                    help='pretrained weights for the backbone model')
 	parser.add_argument('--freeze-backbone', action='store_true')
 
 	# Scheduler
 	parser.add_argument('--scheduler', default="cosine-wr", type=str,
-						help="scheduler for SGD. It can one of 'multi-step'"
-						"and 'cosine-wr'")
+	                    help="scheduler for SGD. It can one of 'multi-step'"
+	                    "and 'cosine-wr'")
 
 	# Params for Scheduler
 	parser.add_argument('--milestones', default="80,100", type=str,
-						help="milestones for MultiStepLR")
+	                    help="milestones for MultiStepLR")
 	parser.add_argument('--t0', default=10, type=int,
-						help='T_0 value for Cosine Annealing Warm Restarts.')
+	                    help='T_0 value for Cosine Annealing Warm Restarts.')
 	parser.add_argument('--t-mult', default=2, type=float,
-						help='T_mult value for Cosine Annealing Warm Restarts.')
+	                    help='T_mult value for Cosine Annealing Warm Restarts.')
 
 	# Train params
 	parser.add_argument('--batch-size', default=32, type=int,
-						help='batch size')
+	                    help='batch size')
 	parser.add_argument('--num-epochs', default=120, type=int,
-						help='number of epochs to train')
+	                    help='number of epochs to train')
 	parser.add_argument('--num-workers', default=4, type=int,
-						help='number of workers used in dataloading')
+	                    help='number of workers used in dataloading')
 	parser.add_argument('--val-epochs', default=5, type=int,
-						help='perform validation every this many epochs')
+	                    help='perform validation every this many epochs')
 	parser.add_argument('--device', type=str,
-						help='device to use for training')
+	                    help='device to use for training')
 
 	parser.add_argument('--checkpoint-path', default='output',
-						help='directory for saving checkpoint models')
+	                    help='directory for saving checkpoint models')
 
 
 	logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-						format='%(asctime)s - %(levelname)s - %(message)s')
+	                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 	args = parser.parse_args()
 	logging.info(args)
@@ -207,23 +207,23 @@ def main():
 		sys.exit(-1)
 
 	train_transform = TrainAugmentation(config.image_size,
-										config.image_mean, config.image_std,
-										bbox_format=bbox_format)
+	                                    config.image_mean, config.image_std,
+	                                    bbox_format=bbox_format)
 
 	test_transform = TestTransform(config.image_size,
-								   config.image_mean, config.image_std,
-								   bbox_format=bbox_format)
+	                               config.image_mean, config.image_std,
+	                               bbox_format=bbox_format)
 
 	logging.info("Loading datasets...")
 
 	if args.dataset_style == 'pascal-voc':
 		dataset = VOCDetection(root=args.dataset,
-							   image_set=args.train_image_set,
-							   transform=train_transform)
+		                       image_set=args.train_image_set,
+		                       transform=train_transform)
 	elif args.dataset_style == 'coco':
 		dataset = CocoDetection(root=args.dataset,
-								ann_file="%s.json" % args.train_image_set,
-								transform=train_transform)
+		                        ann_file="%s.json" % args.train_image_set,
+		                        transform=train_transform)
 
 	num_classes = len(dataset.class_names)
 
@@ -234,8 +234,8 @@ def main():
 	drop_last = len(dataset) % args.batch_size == 1
 
 	train_loader = DataLoader(dataset, args.batch_size, collate_fn=collate,
-							  num_workers=args.num_workers,
-							  shuffle=True, drop_last=drop_last)
+	                          num_workers=args.num_workers,
+	                          shuffle=True, drop_last=drop_last)
 
 	if args.val_dataset is not None:
 		val_dataset_root = args.val_dataset
@@ -244,22 +244,22 @@ def main():
 
 	if args.dataset_style == 'pascal-voc':
 		val_dataset = VOCDetection(root=val_dataset_root,
-							   image_set=args.val_image_set,
-							   transform=test_transform)
+		                           image_set=args.val_image_set,
+		                           transform=test_transform)
 	elif args.dataset_style == 'coco':
 		val_dataset = CocoDetection(root=val_dataset_root,
-									ann_file="%s.json" % args.val_image_set,
-									transform=test_transform)
+		                            ann_file="%s.json" % args.val_image_set,
+		                            transform=test_transform)
 
 	logging.info("Validation dataset size: {}".format(len(val_dataset)))
 
 	val_loader = DataLoader(val_dataset, args.batch_size, collate_fn=collate,
-							num_workers=args.num_workers,
-							shuffle=False)
+	                        num_workers=args.num_workers,
+	                        shuffle=False)
 
 	logging.info("Building network")
 	net = create_net(num_classes,
-					 pretrained=(args.backbone_pretrained is not None))
+	                 pretrained=(args.backbone_pretrained is not None))
 
 	if args.backbone_pretrained and args.backbone_weights is not None:
 		logging.info(f"Load backbone weights from {args.backbone_weights}")
@@ -276,7 +276,7 @@ def main():
 
 	priors = config.priors.to(device=device, dtype=torch.float32)
 	criterion = MultiboxLoss(priors, iou_threshold=0.5, neg_pos_ratio=3,
-							 center_variance=0.1, size_variance=0.2)
+	                         center_variance=0.1, size_variance=0.2)
 
 	if args.optimizer == "adamw":
 		optim_class = torch.optim.AdamW
@@ -292,24 +292,24 @@ def main():
 		logging.info("Uses MultiStepLR scheduler.")
 		milestones = [int(v.strip()) for v in args.milestones.split(",")]
 		scheduler = MultiStepLR(optimizer, milestones=milestones,
-								gamma=0.1, last_epoch=last_epoch)
+		                        gamma=0.1, last_epoch=last_epoch)
 	else:
 		logging.info("Uses Cosine annealing warm restarts scheduler.")
 		scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=args.t0,
-												T_mult=args.t_mult,
-												eta_min=1e-5)
+		                                        T_mult=args.t_mult,
+		                                        eta_min=1e-5)
 
 	os.makedirs(args.checkpoint_path, exist_ok=True)
 
 	logging.info(f"Start training from epoch {last_epoch + 1}.")
 	for epoch in range(last_epoch + 1, args.num_epochs):
 		train(train_loader, net, criterion,
-			  optimizer, device=device, epoch=epoch)
+		      optimizer, device=device, epoch=epoch)
 		scheduler.step()
 
 		if epoch % args.val_epochs == 0 or epoch == args.num_epochs - 1:
 			val_loss, val_reg_loss, val_cls_loss = test(val_loader, net,
-														criterion, device)
+			                                            criterion, device)
 			logging.info(
 				f"Epoch: {epoch}, " +
 				f"Validation Loss: {val_loss:.4f}, " +
