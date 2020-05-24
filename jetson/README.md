@@ -43,3 +43,10 @@ deepstream-app -c app_config.txt
 ```
 
 On the first run the ONNX model is going to be converted to TensorRT engine and stored. It takes about 10-15 minutes, but is not necessary for the next runs, unless the model is modified. Please also note, that the application in this configuration is run synchronized, i.e. respects the FPS rate of the source. To get the maximum possible inference performance, change `sync=0` to `sync=1` for all the sinks in `app_config.txt`.
+
+## Inference speed
+
+| Model | Board | Data type | Speed |
+|------ | ------ | ------- | ------ |
+| MobileNetV3-Small + SSDLite | Jetson Nano | fp16 | ~ 62 FPS |
+| MobileNetV3-Large + SSDLite | Jetson Nano | fp16 | ~ 32 FPS |
