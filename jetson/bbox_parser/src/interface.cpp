@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstring>
 
 #include <nvdsinfer_custom_impl.h>
