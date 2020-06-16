@@ -1,8 +1,13 @@
-find_path(DeepStream_INCLUDE_DIR nvdsinfer.h HINTS ${DEEPSTREAM_SDK_PATH}/sources PATH_SUFFIXES includes)
+if (NOT DEEPSTREAM_SDK_PATH)
+	set(DEEPSTREAM_SDK_PATH "/opt/nvidia/deepstream")
+endif()
 
-find_library(DeepStream_LIBRARY NAMES nvds_infer HINTS ${DEEPSTREAM_SDK_PATH}/lib)
+file(GLOB DEEPSTREAM_VERSIONED_DIRS "${DEEPSTREAM_SDK_PATH}/deepstream-*")
+find_path(DeepStream_INCLUDE_DIR nvdsinfer.h HINTS ${DEEPSTREAM_VERSIONED_DIRS} PATH_SUFFIXES "sources/includes")
 
-if(DeepStream_INCLUDE_DIR AND EXISTS "${DEEPSTREAM_INCLUDE_DIR}/nvds_version.h")
+find_library(DeepStream_LIBRARY NAMES nvds_infer HINTS ${DEEPSTREAM_VERSIONED_DIRS} PATH_SUFFIXES lib)
+
+if(DeepStream_INCLUDE_DIR AND EXISTS "${DeepStream_INCLUDE_DIR}/nvds_version.h")
 	file(STRINGS "${DeepStream_INCLUDE_DIR}/nvds_version.h" deepstream_version_strs REGEX "^#define NVDS_VERSION.*")
 
 	set(VERSIONS "")
