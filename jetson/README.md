@@ -6,7 +6,7 @@ The recommended way to get all possible performance in deep learning application
 
 Before running you need to install DeepStream SDK package and CMake to build the bounding box parsing library:
 ```bash
-sudo apt-get install deepstream cmake
+sudo apt-get install deepstream-4.0 cmake
 ```
 
 ## Backend library
