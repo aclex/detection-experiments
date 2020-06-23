@@ -86,8 +86,10 @@ def group_annotation_by_class(dataset):
 	return true_case_stat, all_gt_boxes, all_difficult_cases
 
 
-def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_cases,
-                                        preds, iou_threshold, use_2007_metric):
+def compute_average_precision_per_class(num_true_cases, gt_boxes,
+                                        difficult_cases, preds,
+                                        iou_threshold, metric_score_threshold,
+                                        use_2007_metric):
 	image_ids = []
 	boxes = []
 	scores = []
@@ -101,21 +103,24 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 	scores = np.array(scores)
 	sorted_indexes = np.argsort(-scores)
 	boxes = [boxes[i] for i in sorted_indexes]
+	scores = [scores[i] for i in sorted_indexes]
 	image_ids = [image_ids[i] for i in sorted_indexes]
 	true_positive = np.zeros(len(image_ids))
 	false_positive = np.zeros(len(image_ids))
 	matched = set()
 
 	avg_ious = []
+	tp_count = 0
+	fp_count = 0
 	for i, image_id in enumerate(image_ids):
 		box = boxes[i]
 		if image_id not in gt_boxes:
 			false_positive[i] = 1
+			fp_count += 1
 			continue
 
-		gt_box = gt_boxes[image_id]
-		ious = box_utils.iou_of(box, gt_box)
-		avg_ious.append(ious)
+		image_gt_boxes = gt_boxes[image_id]
+		ious = box_utils.iou_of(box, image_gt_boxes)
 		max_iou = torch.max(ious).item()
 		max_arg = torch.argmax(ious).item()
 
@@ -124,12 +129,24 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 				if (image_id, max_arg) not in matched:
 					true_positive[i] = 1
 					matched.add((image_id, max_arg))
+
+					if scores[i] >= metric_score_threshold:
+						tp_count += 1
+						avg_ious.append(max_iou)
 				else:
 					false_positive[i] = 1
+					if scores[i] >= metric_score_threshold:
+						fp_count += 1
 		else:
 			false_positive[i] = 1
+			if scores[i] >= metric_score_threshold:
+				fp_count += 1
 
-	avg_ious = torch.cat(avg_ious, dim=-1)
+	total_gt_boxes_count = 0
+	for _, image_gt_boxes in gt_boxes.items():
+		total_gt_boxes_count += len(image_gt_boxes)
+
+	fn_count = total_gt_boxes_count - tp_count
 
 	true_positive = true_positive.cumsum()
 	false_positive = false_positive.cumsum()
@@ -139,21 +156,23 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes, difficult_case
 
 	if use_2007_metric:
 		return compute_voc2007_average_precision(precision, recall), \
-			torch.mean(avg_ious).item()
+			np.mean(avg_ious), tp_count, fp_count, fn_count
 	else:
 		return compute_average_precision(precision, recall), \
-			torch.mean(avg_ious).item()
+			np.mean(avg_ious), tp_count, fp_count, fn_count
 
 
-def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
-	true_case_stat, all_gb_boxes, all_difficult_cases = \
+def eval(dataset, predictor, iou_threshold=0.5,
+         metric_score_threshold=0, use_2007_metric=False):
+	true_case_stat, all_gt_boxes, all_difficult_cases = \
 		group_annotation_by_class(dataset)
 
 	results_per_class = dict()
 	for i in interactive(range(len(dataset))):
 		image = dataset.get_image(i)
 		image_id = dataset.ids[i]
-		boxes, labels, probs = predictor.predict(image, prob_threshold=0)
+		boxes, labels, probs = predictor.predict(image,
+		                                         prob_threshold=0)
 
 		for box, label, prob in zip(boxes, labels, probs):
 			if label.item() not in results_per_class:
@@ -163,22 +182,30 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 
 	aps = []
 	avg_ious = []
-	print("\n\nAverage Precision Per-class:")
+	tps = []
+	fps = []
+	fns = []
+	print("\n\nAverage precision per-class:")
 	for class_index, class_name in enumerate(dataset.class_names):
 		if class_index == 0:
 			continue
 
-		ap, avg_iou = compute_average_precision_per_class(
+		ap, avg_iou, tp, fp, fn = compute_average_precision_per_class(
 			true_case_stat[class_index],
-			all_gb_boxes[class_index],
+			all_gt_boxes[class_index],
 			all_difficult_cases[class_index],
 			results_per_class[class_index],
 			iou_threshold,
+			metric_score_threshold,
 			use_2007_metric
 		)
 		aps.append(ap)
 		avg_ious.append(avg_iou)
+		tps.append(tp)
+		fps.append(fp)
+		fns.append(fn)
 
-		print(f"{class_name}: {ap} mean IOU: {avg_iou}")
+		print(f"{class_name}: {ap}, TP: {tp}, FP: {fp}, FN: {fn}, "
+		      f"mean IOU: {avg_iou}")
 
 	print(f"\nAverage Precision Across All Classes:{sum(aps)/len(aps)}")
