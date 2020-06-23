@@ -15,7 +15,10 @@ class ToPredictions(torch.nn.Module):
 	def forward(self, confidences, locations):
 		confidences = F.softmax(confidences, dim=2)
 		boxes = box_utils.convert_locations_to_boxes(
-			locations, self.priors, self.center_variance, self.size_variance)
+			locations,
+			self.priors.to(device=locations.device),
+			self.center_variance,
+			self.size_variance)
 		boxes = box_utils.center_form_to_corner_form(boxes)
 
 		return confidences, boxes
