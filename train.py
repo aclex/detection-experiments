@@ -130,10 +130,16 @@ def main():
 
 	# Params for optimizer
 	parser.add_argument('--optimizer', default="ranger",
-	                    help="optimizer to use ('diffgrad', 'adamw', "
+	                    help="optimizer to use ('sgd', 'diffgrad', 'adamw', "
 	                    "or 'ranger')")
 	parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
 	                    help='initial learning rate')
+	parser.add_argument('--momentum', default=0.9, type=float,
+	                    help='optional momentum for SGD optimizer '
+	                    '(default is 0.9)')
+	parser.add_argument('--weight-decay', default=5e-4, type=float,
+	                    help='optional weight decay (L2 penalty) '
+	                    'for SGD optimizer (default is 5e-4)')
 
 	parser.add_argument('--backbone-pretrained', action='store_true')
 	parser.add_argument('--backbone-weights',
@@ -146,7 +152,7 @@ def main():
 	                    "and 'cosine-wr'")
 
 	# Params for Scheduler
-	parser.add_argument('--milestones', default="80,100", type=str,
+	parser.add_argument('--milestones', default="70,100", type=str,
 	                    help="milestones for MultiStepLR")
 	parser.add_argument('--t0', default=10, type=int,
 	                    help='T_0 value for Cosine Annealing Warm Restarts.')
@@ -278,15 +284,25 @@ def main():
 	criterion = MultiboxLoss(priors, iou_threshold=0.5, neg_pos_ratio=3,
 	                         center_variance=0.1, size_variance=0.2)
 
-	if args.optimizer == "adamw":
+	optim_kwargs = {
+		"lr": args.lr,
+		"weight_decay": args.weight_decay
+	}
+
+	if args.optimizer == "sgd":
+		optim_class = torch.optim.SGD
+		optim_kwargs.update({
+			"momentum": args.momentum
+		})
+	elif args.optimizer == "adamw":
 		optim_class = torch.optim.AdamW
 	elif args.optimizer == "diffgrad":
 		optim_class = DiffGrad
 	else:
 		optim_class = Ranger
 
-	optimizer = optim_class(net.parameters(), lr=args.lr)
-	logging.info(f"Learning rate: {args.lr}")
+	optimizer = optim_class(net.parameters(), **optim_kwargs)
+	logging.info(f"Optimizer parameters used: {optim_kwargs}")
 
 	if args.scheduler == 'multi-step':
 		logging.info("Uses MultiStepLR scheduler.")
