@@ -9,3 +9,6 @@
 	path = optim
 	url = https://github.com/lessw2020/Best-Deep-Learning-Optimizers.git
 	ignore = dirty
+[submodule "backbone/outlet/ghostnet"]
+	path = backbone/outlet/ghostnet
+	url = https://github.com/huawei-noah/ghostnet

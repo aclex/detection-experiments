@@ -14,6 +14,8 @@ from detector.ssd.mobilenetv3_ssd_lite import (
 	create_mobilenetv3_small_ssd_lite
 )
 
+from detector.ssd.ghostnet_ssd_lite import create_ghostnet_ssd_lite
+
 from detector.ssd.multibox_loss import MultiboxLoss
 
 from dataset.voc import VOCDetection
@@ -125,8 +127,8 @@ def main():
 
 	parser.add_argument('--net', default="mb3-small-ssd-lite",
 	                    help="network architecture "
-	                    "(supported are mb3-large-ssd-lite and "
-	                    "mb3-small-ssd-lite)")
+	                    "(supported are mb3-large-ssd-lite, "
+	                    "mb3-small-ssd-lite and ghostnet-ssd-lite)")
 
 	# Params for optimizer
 	parser.add_argument('--optimizer', default="ranger",
@@ -198,6 +200,10 @@ def main():
 	elif args.net == 'mb3-small-ssd-lite':
 		create_net = lambda num, pretrained: \
 			create_mobilenetv3_small_ssd_lite(num, pretrained=pretrained)
+
+	elif args.net == 'ghostnet-ssd-lite':
+		create_net = lambda num, pretrained: \
+			create_ghostnet_ssd_lite(num, pretrained=pretrained)
 
 	else:
 		logging.fatal("The net type is wrong.")
