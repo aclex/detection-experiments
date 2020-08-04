@@ -52,8 +52,7 @@ if (DeepStream_FOUND)
 	set(DeepStream_INCLUDE_DIRS ${DeepStream_INCLUDE_DIR})
 
 	get_filename_component(DeepStream_LIBRARY_DIR ${DeepStream_LIBRARY} DIRECTORY)
-	set(DeepStream_LIBRARIES ${DeepStream_LIBRARY_NAMES})
-	list(TRANSFORM DeepStream_LIBRARIES PREPEND "${DeepStream_LIBRARY_DIR}/")
+	string(REGEX REPLACE "([^;]+)" "${DeepStream_LIBRARY_DIR}/\\1" DeepStream_LIBRARIES "${DeepStream_LIBRARY_NAMES}")
 
 	if (NOT TARGET DeepStream::DeepStream)
 		add_library(DeepStream::DeepStream INTERFACE IMPORTED)
