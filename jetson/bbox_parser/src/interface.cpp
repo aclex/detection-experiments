@@ -21,10 +21,16 @@ extern "C" bool NvDsInferParseCustomBboxes(const std::vector<NvDsInferLayerInfo>
 		{
 			cls_data = static_cast<const float*>(layer_info.buffer);
 
-			if (!num_locations && layer_info.dims.numDims > 0)
-				num_locations = layer_info.dims.d[0];
+#if DS_GENERATION == 4
+			const auto& dims { layer_info.dims };
+#else
+			const auto& dims { layer_info.inferDims };
+#endif
 
-			if (layer_info.dims.numDims > 1 && num_classes != layer_info.dims.d[1])
+			if (!num_locations && dims.numDims > 0)
+				num_locations = dims.d[0];
+
+			if (dims.numDims > 1 && num_classes != dims.d[1])
 			{
 				std::cerr << "Number of classes in the configuration and returned from the model mismatch!" << std::endl;
 			}
