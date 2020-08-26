@@ -33,18 +33,18 @@ namespace
 
 	const float iou(const NvDsInferParseObjectInfo& a, const NvDsInferParseObjectInfo& b) noexcept
 	{
-		const unsigned int overlap_left { max(a.left, b.left) };
-		const unsigned int overlap_top { max(a.top, b.top) };
-		const unsigned int overlap_right { min(a.left + a.width, b.left + b.width) };
-		const unsigned int overlap_bottom { min(a.top + a.height, b.top + b.height) };
+		const auto overlap_left { max(a.left, b.left) };
+		const auto overlap_top { max(a.top, b.top) };
+		const auto overlap_right { min(a.left + a.width, b.left + b.width) };
+		const auto overlap_bottom { min(a.top + a.height, b.top + b.height) };
 
 		if (overlap_right < overlap_left || overlap_bottom < overlap_top)
 		{
 			return 0.f;
 		}
 
-		const unsigned int overlap { (overlap_right - overlap_left) * (overlap_bottom - overlap_top) };
-		const unsigned int comp { a.width * a.height + b.width * b.height - overlap };
+		const auto overlap { (overlap_right - overlap_left) * (overlap_bottom - overlap_top) };
+		const auto comp { a.width * a.height + b.width * b.height - overlap };
 
 		return float(overlap) / comp;
 	}
