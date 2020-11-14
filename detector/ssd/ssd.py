@@ -8,6 +8,7 @@ from detector.ssd.utils import box_utils
 
 from nn.separable_conv_2d import SeparableConv2d
 
+from fpn.extension import Extension
 from detector.ssd.to_predictions import ToPredictions
 
 
@@ -25,16 +26,10 @@ class SSD(nn.Module):
 
 		feature_channels = self.backbone.feature_channels()
 
-		self.extras = nn.ModuleList([
-			SeparableConv2d(in_channels=feature_channels[-1], out_channels=512,
-			                kernel_size=3, padding=1, stride=2),
-			SeparableConv2d(in_channels=512, out_channels=256,
-			                kernel_size=3, padding=1, stride=2),
-			SeparableConv2d(in_channels=256, out_channels=256,
-			                kernel_size=3, padding=1, stride=2),
-			SeparableConv2d(in_channels=256, out_channels=64,
-			                kernel_size=3, padding=1, stride=2),
-		])
+		self.extras = Extension(
+			4,
+			in_channels=[feature_channels[-1], 512, 256, 256],
+			out_channels=[512, 256, 256, 64])
 
 		self.classification_headers = nn.ModuleList([
 			SeparableConv2d(in_channels=feature_channels[-2],
@@ -83,11 +78,12 @@ class SSD(nn.Module):
 			confidences.append(confidence)
 			locations.append(location)
 
+		extra_x = self.extras.forward(x)
+
 		header_index = i + 1
 
-		for layer in self.extras:
-			x = layer(x)
-			confidence, location = self.compute_header(header_index, x)
+		for ex in extra_x:
+			confidence, location = self.compute_header(header_index, ex)
 			header_index += 1
 			confidences.append(confidence)
 			locations.append(location)
