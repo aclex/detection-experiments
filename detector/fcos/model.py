@@ -7,7 +7,7 @@ from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
 from nn.separable_conv_2d import SeparableConv2d
 
 from detector.model import Model
-from detector.fcos.fcos import Head
+from detector.fcos.head import Head
 
 from fpn.bifpn import BiFPN
 
@@ -25,7 +25,7 @@ class MobileNetV3SmallBiFPNFCOS(Model):
 				num_layers=1)
 
 		head = Head(num_classes=num_classes, conv=SeparableConv2d,
-			act=nn.Hardswish)
+			act=nn.ReLU)
 
 		super(MobileNetV3SmallBiFPNFCOS, self).__init__(
 			backbone, fpn_builder, head, num_levels=5,

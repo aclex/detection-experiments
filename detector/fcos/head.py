@@ -1,6 +1,5 @@
 import math
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 from .scale import Scale
@@ -21,6 +20,8 @@ class Head(nn.Module):
 		self.num_classes = num_classes
 		self.num_levels = len(strides)
 
+		with_bias = bool(norm is None)
+
 		cls_tower = []
 		reg_tower = []
 
@@ -29,8 +30,8 @@ class Head(nn.Module):
 				conv(
 					num_channels, num_channels,
 					kernel_size=3, stride=1, padding=1,
-					bias=(norm is None)),
-				norm(num_features=num_channels),
+					bias=with_bias),
+				norm(num_features=num_channels) if with_bias else nn.Identity(),
 				act())
 
 			cls_tower.append(cls_node)
@@ -39,8 +40,8 @@ class Head(nn.Module):
 				conv(
 					num_channels, num_channels,
 					kernel_size=3, stride=1, padding=1,
-					bias=(norm is None)),
-				norm(num_features=num_channels),
+					bias=with_bias),
+				norm(num_features=num_channels) if with_bias else nn.Identity(),
 				act())
 
 			reg_tower.append(reg_node)
@@ -80,6 +81,8 @@ class Head(nn.Module):
 
 			scales_out = self.scales[l].forward(reg_out)
 
-			result.append((cls_out, scales_out, centerness_out))
+			joint_level_out = torch.cat([scales_out, centerness_out, cls_out], dim=1)
+
+			result.append(joint_level_out)
 
 		return result

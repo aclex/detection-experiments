@@ -54,7 +54,7 @@ class BiFPNLayer(nn.Module):
 			node = nn.Sequential(
 				weighted_sum(2),
 				conv(
-					num_channels, num_channels, 3,
+					num_channels, num_channels, kernel_size=3,
 					padding=1, bias=(norm is None)),
 				norm(num_features=num_channels) if norm else nn.Identity(),
 				act())
@@ -132,7 +132,7 @@ class BiFPN(nn.Module):
 		for i in range(self.num_levels):
 			node = nn.Sequential(
 				conv(
-					self.feature_channels[i], out_channels, 1,
+					self.feature_channels[i], out_channels, kernel_size=1,
 					bias=(norm is None)),
 				norm(num_features=out_channels) if norm else nn.Identity(),
 				act())
