@@ -7,7 +7,7 @@ from detector.fcos.model import MobileNetV3SmallBiFPNFCOS
 
 @pytest.fixture
 def model():
-	m = MobileNetV3SmallBiFPNFCOS(num_classes=2)
+	m = MobileNetV3SmallBiFPNFCOS(num_classes=2, num_channels=128)
 	m.arch_name = "test"
 	m.class_names = ["background", "person"]
 
