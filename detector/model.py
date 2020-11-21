@@ -23,7 +23,8 @@ class Model(nn.Module):
 		extra_channels = [fpn_channels] * extra_levels
 		self.extension = Extension(
 			bootstrap_channels=feature_channels[-1],
-			out_channels=extra_channels)
+			out_channels=extra_channels,
+			conv=conv)
 
 		extra_strides = []
 		for i in range(extra_levels):
