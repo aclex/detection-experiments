@@ -23,7 +23,7 @@ def test_sanity(model):
 
 
 def test_onnx_export(model):
-	a = torch.ones((1, 3, 512, 512)).to(dtype=torch.float32)
+	a = torch.ones((1, 3, 256, 256)).to(dtype=torch.float32)
 
 	model.to(dtype=torch.float32)
 
