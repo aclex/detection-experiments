@@ -17,7 +17,7 @@ class Model(nn.Module):
 		self.head = head
 
 		feature_channels = self.backbone.feature_channels()
-		feature_strides = [8, 16, 32]
+		feature_strides = self.backbone.feature_strides()
 
 		extra_levels = num_levels - len(feature_strides)
 		extra_channels = [fpn_channels] * extra_levels
