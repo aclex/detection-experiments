@@ -27,9 +27,11 @@ class Mapper(nn.Module):
 			s = strides[i]
 
 			th_max = math.ceil(last_size / s)
-			th_min = max(th_max - 4, 1)
 
-			assert th_max > th_min
+			if th_max % 2:
+				th_max += 1
+
+			th_min = th_max / 2
 
 			last_size = th_min * s
 
@@ -43,7 +45,7 @@ class Mapper(nn.Module):
 
 	@staticmethod
 	def _create_level_reg_maps(stride, image_size):
-		r = torch.arange(0, 1, float(stride) / image_size)
+		r = torch.arange(0, image_size, stride)
 
 		my, mx = torch.meshgrid(r, r)
 
@@ -58,19 +60,26 @@ class Mapper(nn.Module):
 	def _calc_area(box):
 		return (box[2] - box[0]) * (box[3] - box[1])
 
-	def _calc_class_slab(stride, label):
-		m = self._create_level_map(
-			stride, self.image_size, num_cell_elements=self.num_classses)
+	@staticmethod
+	def _calc_reg_slab(stride, subparts):
+		result = torch.cat(subparts, dim=-1)
+		result /= stride
 
-		m[..., label] = 1.
-
-		return m
+		return result
 
 	@staticmethod
 	def _calc_centerness_slab(l, t, r, b):
 		return torch.sqrt(
 			(torch.minimum(l, r) / torch.maximum(l, r)) *
 			(torch.minimum(t, b) / torch.maximum(t, b)))
+
+	def _calc_class_slab(self, stride, label):
+		m = self._create_level_map(
+			stride, self.image_size, num_cell_elements=self.num_classes)
+
+		m[..., int(label)] = 1.
+
+		return m
 
 	@staticmethod
 	def _filter_background(level_map):
@@ -97,7 +106,7 @@ class Mapper(nn.Module):
 			cls_level_map = self._create_level_map(
 				s, self.image_size, num_cell_elements=self.num_classes)
 			reg_level_map = self._create_level_map(
-				s, self.image_size, value=float("+inf"))
+				s, self.image_size, num_cell_elements=4)
 			centerness_level_map = self._create_level_map(s, self.image_size)
 
 			for box, label in sorted(
@@ -106,15 +115,14 @@ class Mapper(nn.Module):
 					reverse=True):
 				mx, my = self._create_level_reg_maps(s, self.image_size)
 
-				l = mx - math.ceil(float(box[0]) / s)
-				t = my - math.ceil(float(box[1]) / s)
-				r = math.floor(float(box[2]) / s) - mx
-				b = math.floor(float(box[3]) / s) - my
+				l = mx - box[0]
+				t = my - box[1]
+				r = box[2] - mx
+				b = box[3] - my
 
-				cls_slab = self._create_level_map(
-					s, self.image_size, num_cell_elements=self.num_classes)
-				reg_slab = torch.cat([l, t, r, b], dim=-1)
+				reg_slab = self._calc_reg_slab(s, [l, t, r, b])
 				centerness_slab = self._calc_centerness_slab(l, t, r, b)
+				cls_slab = self._calc_class_slab(s, label)
 
 				pred = self._mask(reg_slab, level)
 
