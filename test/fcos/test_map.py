@@ -51,6 +51,11 @@ def sample():
 
 
 @pytest.fixture
+def targets(sample):
+	return ([sample[0]], [sample[1]])
+
+
+@pytest.fixture
 def expected_joint_map_8x8():
 	l = torch.tensor([
 		[0] * 8,
@@ -166,3 +171,8 @@ def test_map_sample(sample, mapper, expected_joint_map_8x8):
 	assert result_joint_map_8x8.shape == expected_joint_map_8x8.shape
 
 	assert torch.allclose(result_joint_map_8x8, expected_joint_map_8x8)
+
+def test_map_forward(targets, mapper, strides):
+	levels = mapper.forward(targets)
+
+	assert len(levels) == len(strides)

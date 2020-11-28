@@ -16,7 +16,24 @@ class Mapper(nn.Module):
 		self.level_thresholds = self._calc_level_thresholds(strides, image_size)
 
 	def forward(self, x):
-		return None
+		"""Maps groud-truth targets to a bunch of per-level map tensors.
+
+		Arguments:
+			x: tuple(list(torch.Tensor)) - per-image labels and bounding boxes
+		"""
+		batch_results = []
+
+		for b, l in zip(*x):
+			level_maps = self._map_sample(b, l)
+			batch_results.append(level_maps)
+
+		result = []
+		for i in range(self.num_levels):
+			per_level_maps = [t[i] for t in batch_results]
+			r = torch.stack(per_level_maps)
+			result.append(r)
+
+		return result
 
 	@staticmethod
 	def _calc_level_thresholds(strides, image_size):
