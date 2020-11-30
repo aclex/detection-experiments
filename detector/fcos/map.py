@@ -4,7 +4,10 @@ import math
 
 from torch import nn
 
-class Mapper(nn.Module):
+from .level_map_operations import LevelMapOperations
+
+
+class Mapper(nn.Module, LevelMapOperations):
 	def __init__(self, strides, image_size, num_classes):
 		super(Mapper, self).__init__()
 
@@ -59,14 +62,6 @@ class Mapper(nn.Module):
 	@staticmethod
 	def _calc_level_map_sizes(strides, image_size):
 		return [image_size // s for s in strides]
-
-	@staticmethod
-	def _create_level_reg_maps(stride, image_size):
-		r = torch.arange(0, image_size, stride)
-
-		my, mx = torch.meshgrid(r, r)
-
-		return mx.unsqueeze(-1), my.unsqueeze(-1)
 
 	@staticmethod
 	def _create_level_map(stride, image_size, value=0., num_cell_elements=1):
