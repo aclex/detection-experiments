@@ -9,3 +9,7 @@ class LevelMapOperations:
 		my, mx = torch.meshgrid(r, r)
 
 		return mx.unsqueeze(-1), my.unsqueeze(-1)
+
+	@staticmethod
+	def split_joint_tensor(x, num_classes):
+		return torch.split(maps, [4, 1, self.num_classes], dim=-1)

@@ -23,6 +23,11 @@ class Mapper(nn.Module, LevelMapOperations):
 
 		Arguments:
 			x: tuple(list(torch.Tensor)) - per-image labels and bounding boxes
+
+		Returns:
+			list(torch.Tensor) - per-level list of map tensors, i.e. imaginary
+				shape is (L, B, C, H, W), where L - number of levels, B - batch
+				size
 		"""
 		batch_results = []
 
