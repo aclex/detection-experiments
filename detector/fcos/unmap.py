@@ -51,6 +51,13 @@ class Unmapper(nn.Module, LevelMapOperations):
 	def _fix_sign():
 		return torch.tensor([-1, -1, 1, 1], dtype=torch.float32)
 
+	@classmethod
+	def _unmap_reg_level(cls, reg_level_map, stride, image_size):
+		reg_diff_map = cls._create_diff_map(stride, image_size)
+
+		sn = cls._fix_sign()
+		return sn * reg_level_map + reg_diff_map
+
 	@staticmethod
 	def _create_prefilter_mask(centered_cls_level_map, threshold):
 		mx, _ = centered_cls_level_map.max(dim=-1)
@@ -70,10 +77,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 		mask = self._create_prefilter_mask(
 			centered_cls_level_map, self.prefilter_threshold)
 
-		reg_diff_map = self._create_diff_map(s, self.image_size)
-
-		sn = self._fix_sign()
-		reg_level_map = sn * reg_level_map + reg_diff_map
+		reg_level_map = self._unmap_reg_level(reg_level_map, s, self.image_size)
 
 		reg_level_map = reg_level_map[mask]
 		centered_cls_level_map = centered_cls_level_map[mask]
