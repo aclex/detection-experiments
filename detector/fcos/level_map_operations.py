@@ -12,4 +12,4 @@ class LevelMapOperations:
 
 	@staticmethod
 	def split_joint_tensor(x, num_classes):
-		return torch.split(maps, [4, 1, self.num_classes], dim=-1)
+		return torch.split(x, [4, 1, num_classes], dim=-1)
