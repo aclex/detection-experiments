@@ -153,6 +153,8 @@ class Mapper(nn.Module, LevelMapOperations):
 				centerness_level_map,
 				cls_level_map], dim=-1)
 
+			level_map = level_map.permute(2, 0, 1)
+
 			level_maps.append(level_map)
 
 		return level_maps

@@ -59,6 +59,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 	def _unmap_level(self, level, maps):
 		s = self.strides[level]
 
+		maps = maps.permute(1, 2, 0)
 		sp = self.split_joint_tensor(maps, self.num_classes)
 		reg_level_map, centerness_level_map, cls_level_map = sp
 
