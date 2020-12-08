@@ -1,5 +1,6 @@
 import pytest
 
+import os
 import math
 
 import torch
@@ -24,6 +25,19 @@ def sample():
 			[38, 118, 119, 180],
 			[190, 187, 230, 232]], dtype=torch.float32),
 		torch.tensor([1, 1, 2, 2], dtype=torch.float32))
+
+
+@pytest.fixture
+def output_sample():
+	d = os.path.dirname(os.path.abspath(__file__))
+	filename = "map_output_sample.pt"
+
+	r = torch.load(os.path.join(d, filename))
+
+	for c in r:
+		c.requires_grad_(False)
+
+	return r
 
 
 @pytest.fixture
@@ -114,5 +128,6 @@ def expected_joint_map_8x8():
 	]).unsqueeze(dim=-1)
 
 	result = torch.cat([reg, centerness, bg, fg1, fg2], dim=-1)
+	result = result.permute(2, 0, 1)
 
 	return result
