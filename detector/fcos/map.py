@@ -119,6 +119,8 @@ class Mapper(nn.Module, LevelMapOperations):
 
 	def _map_sample(self, gt_boxes, gt_labels):
 		level_maps = []
+
+		gt_boxes *= self.image_size
 		for level in range(self.num_levels):
 			s = self.strides[level]
 
