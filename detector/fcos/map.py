@@ -109,10 +109,9 @@ class Mapper(nn.Module, LevelMapOperations):
 	def _pointwise_fit_in_level(self, level_map, level):
 		th = self.level_thresholds[level]
 
-		mn, _ = level_map.min(dim=2)
 		mx, _ = level_map.max(dim=2)
 
-		return (mn.unsqueeze(-1) > th[0]) & (mx.unsqueeze(-1) <= th[1])
+		return (mx.unsqueeze(-1) > th[0]) & (mx.unsqueeze(-1) <= th[1])
 
 	def _mask(self, level_map, level):
 		return self._filter_background(level_map) & \
