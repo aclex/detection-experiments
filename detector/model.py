@@ -21,10 +21,12 @@ class Model(nn.Module):
 
 		extra_levels = num_levels - len(feature_strides)
 		extra_channels = [fpn_channels] * extra_levels
-		self.extension = Extension(
-			bootstrap_channels=feature_channels[-1],
-			out_channels=extra_channels,
-			conv=conv)
+
+		if extra_levels > 0:
+			self.extension = Extension(
+				bootstrap_channels=feature_channels[-1],
+				out_channels=extra_channels,
+				conv=conv)
 
 		extra_strides = []
 		for i in range(extra_levels):
@@ -32,18 +34,22 @@ class Model(nn.Module):
 				(extra_strides[-1] if i > 0 else feature_strides[-1]) * 2)
 
 		fpn_input_channels = feature_channels + extra_channels
-		fpn_strides = feature_strides + extra_strides
+		self.strides = feature_strides + extra_strides
 		self.fpn = fpn_builder(
 			feature_channels=fpn_input_channels,
-			feature_strides=fpn_strides,
+			feature_strides=self.strides,
 			out_channels=fpn_channels,
 			conv=conv, norm=norm, act=act)
 
 	def forward(self, x):
 		features = self.backbone.forward(x)
-		extras = self.extension.forward(features[-1])
 
-		extra_features = features + extras
+		if hasattr(self, "extension"):
+			extras = self.extension.forward(features[-1])
+
+			extra_features = features + extras
+		else:
+			extra_features = features
 
 		fpn_out = self.fpn.forward(extra_features)
 		out = self.head.forward(fpn_out)
