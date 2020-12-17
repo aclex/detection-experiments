@@ -17,7 +17,7 @@ class MobileNetV3SmallBiFPNFCOS(Model):
 			pretrained=False):
 		backbone = MobileNetV3_Small(pretrained=pretrained)
 		conv = SeparableConv2d
-		num_levels = 5
+		num_levels = 3
 		num_blocks = 2
 
 		def fpn_builder(
