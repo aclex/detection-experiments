@@ -53,9 +53,6 @@ def train(loader, net, mapper, criterion, optimizer, device, epoch=-1):
 
 		optimizer.zero_grad()
 		pred = net.forward(images)
-		print("boxes, labels:")
-		print(boxes)
-		print(labels)
 		target = mapper.forward((boxes, labels))
 		loss, reg_loss, cls_loss, centerness_loss = criterion.forward(
 			pred, target)
@@ -66,13 +63,6 @@ def train(loader, net, mapper, criterion, optimizer, device, epoch=-1):
 		running_reg_loss += reg_loss.item()
 		running_cls_loss += cls_loss.item()
 		running_centerness_loss += centerness_loss.item()
-
-		logging.info(
-			f"Step {i}, " +
-			f"Loss: {loss.item():.4f}, " +
-			f"Regression Loss {reg_loss.item():.4f}, " +
-			f"Classification Loss {cls_loss.item():.4f}, " +
-			f"Centerness Loss {centerness_loss.item():.4f}")
 
 	avg_loss = running_loss / num
 	avg_reg_loss = running_reg_loss / num
