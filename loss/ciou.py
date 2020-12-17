@@ -58,7 +58,7 @@ def elementwise_ciou(
 
 	S_V = S + V
 	alpha = torch.where(
-		iou >= 0.5, V / _num_stab(S + V, eps), torch.tensor([0.]))
+		iou >= 0.5, V / _num_stab(S + V, eps), torch.tensor([0.]).to(S.device))
 
 	return S + D + alpha * V
 

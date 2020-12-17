@@ -54,8 +54,9 @@ class Unmapper(nn.Module, LevelMapOperations):
 	@classmethod
 	def _unmap_reg_level(cls, reg_level_map, stride, image_size):
 		reg_diff_map = cls._create_diff_map(stride, image_size)
+		reg_diff_map = reg_diff_map.to(reg_level_map.device)
 
-		sn = cls._fix_sign()
+		sn = cls._fix_sign().to(reg_level_map.device)
 		return sn * reg_level_map + reg_diff_map
 
 	@staticmethod

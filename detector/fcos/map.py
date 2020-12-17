@@ -91,13 +91,15 @@ class Mapper(nn.Module, LevelMapOperations):
 	def _calc_centerness_slab(l, t, r, b):
 		return torch.sqrt(
 			(torch.minimum(l, r) / torch.maximum(l, r)) *
-			(torch.minimum(t, b) / torch.maximum(t, b)))
+			(torch.minimum(t, b) / torch.maximum(t, b))).to(l.device)
 
 	def _calc_class_slab(self, stride, label):
 		m = self._create_level_map(
 			stride, self.image_size, num_cell_elements=self.num_classes)
 
 		m[..., int(label)] = 1.
+
+		m = m.to(label.device)
 
 		return m
 
@@ -134,7 +136,19 @@ class Mapper(nn.Module, LevelMapOperations):
 					zip(gt_boxes, gt_labels),
 					key=lambda v: Mapper._calc_area(v[0]),
 					reverse=True):
+				if cls_level_map.device != label.device:
+					cls_level_map = cls_level_map.to(label.device)
+
+				if reg_level_map.device != box.device:
+					reg_level_map = reg_level_map.to(box.device)
+
+				if centerness_level_map.device != box.device:
+					centerness_level_map = centerness_level_map.to(box.device)
+
 				mx, my = self._create_level_reg_maps(s, self.image_size)
+
+				mx = mx.to(box.device)
+				my = my.to(box.device)
 
 				l = mx - box[0]
 				t = my - box[1]
