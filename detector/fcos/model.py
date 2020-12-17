@@ -30,11 +30,12 @@ class MobileNetV3SmallBiFPNFCOS(Model):
 				num_layers=1,
 				conv=conv, norm=norm, act=act)
 
-		head = Head(
-			num_classes=num_classes, conv=conv,
-			act=nn.ReLU,
-			num_channels=num_channels, num_blocks=num_blocks)
+		def head_builder(strides):
+			return Head(
+				num_classes=num_classes, strides=strides,
+				conv=conv, act=nn.ReLU,
+				num_channels=num_channels, num_blocks=num_blocks)
 
 		super(MobileNetV3SmallBiFPNFCOS, self).__init__(
-			backbone, fpn_builder, head, num_levels=num_levels,
+			backbone, fpn_builder, head_builder, num_levels=num_levels,
 			fpn_channels=num_channels, conv=conv)

@@ -8,13 +8,12 @@ from fpn.extension import Extension
 class Model(nn.Module):
 	def __init__(
 			self,
-			backbone, fpn_builder, head,
+			backbone, fpn_builder, head_builder,
 			num_levels, fpn_channels,
 			conv=nn.Conv2d, norm=nn.BatchNorm2d, act=nn.ReLU):
 		super(Model, self).__init__()
 
 		self.backbone = backbone
-		self.head = head
 
 		feature_channels = self.backbone.feature_channels()
 		feature_strides = self.backbone.feature_strides()
@@ -40,6 +39,9 @@ class Model(nn.Module):
 			feature_strides=self.strides,
 			out_channels=fpn_channels,
 			conv=conv, norm=norm, act=act)
+
+		self.head = head_builder(
+			strides=self.strides)
 
 	def forward(self, x):
 		features = self.backbone.forward(x)
