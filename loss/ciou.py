@@ -8,6 +8,10 @@ def _calc_area(boxes: torch.Tensor) -> torch.Tensor:
 	return (boxes[..., 2] - boxes[..., 0]) * (boxes[..., 3] - boxes[..., 1])
 
 
+def _num_stab(t, eps=1e-9):
+	return torch.where(t > 0., t, t.new_tensor([eps]))
+
+
 def elementwise_iou(
 		boxes1: torch.Tensor, boxes2: torch.Tensor, eps=1e-9) -> torch.Tensor:
 	area1 = _calc_area(boxes1)
@@ -21,10 +25,7 @@ def elementwise_iou(
 	intersection = whi[..., 0] * whi[..., 1]
 	union = area1 + area2 - intersection
 
-	union = torch.where(union > 0., union, torch.tensor(
-		[eps], dtype=torch.float32))
-
-	return intersection / union
+	return intersection / _num_stab(union, eps)
 
 
 def elementwise_ciou(
@@ -49,11 +50,15 @@ def elementwise_ciou(
 	wh = boxes1[..., 2:] - boxes1[..., :2]
 	wh_gt = boxes2[..., 2:] - boxes2[..., :2]
 
-	V = (2 * (
-			torch.arctan(wh_gt[..., 0] / wh_gt[..., 1]) -
-			torch.arctan(wh[..., 0] / wh[..., 1])) / math.pi) ** 2
+	V = (
+		2 * (
+			torch.arctan(wh_gt[..., 0] / _num_stab(wh_gt[..., 1], eps)) -
+			torch.arctan(wh[..., 0] / _num_stab(wh[..., 1], eps)))
+		/ math.pi) ** 2
 
-	alpha = torch.where(iou >= 0.5, V / (S + V + eps), torch.tensor([0.]))
+	S_V = S + V
+	alpha = torch.where(
+		iou >= 0.5, V / _num_stab(S + V, eps), torch.tensor([0.]))
 
 	return S + D + alpha * V
 
@@ -81,10 +86,12 @@ def permutated_ciou(
 	wh_gt = boxes2[:, 2:] - boxes2[:, :2]
 
 	V = (2 * (
-			torch.arctan(wh_gt[:, None, 0] / wh_gt[:, None, 1]) -
-			torch.arctan(wh[:, 0] / wh[:, 1])) / math.pi) ** 2
+			torch.arctan(
+				wh_gt[:, None, 0] / _num_stab(wh_gt[:, None, 1], eps)) -
+			torch.arctan(wh[:, 0] / _num_stab(wh[:, 1], eps))) / math.pi) ** 2
 
-	alpha = torch.where(iou >= 0.5, V / (S + V + eps), torch.tensor([0.]))
+	alpha = torch.where(
+		iou >= 0.5, V / _num_stab(S + V, eps), torch.tensor([0.]))
 
 	return S + D + alpha * V
 
