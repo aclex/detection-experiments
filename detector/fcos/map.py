@@ -56,9 +56,12 @@ class Mapper(nn.Module, LevelMapOperations):
 			if th_max % 2:
 				th_max += 1
 
-			th_min = th_max / 2
+			th_min = th_max // 2
 
 			last_size = th_min * s
+
+			if i == 0:
+				th_min = 1
 
 			result.append((th_min, th_max))
 
