@@ -8,7 +8,9 @@ from .level_map_operations import LevelMapOperations
 
 
 class Mapper(nn.Module, LevelMapOperations):
-	def __init__(self, strides, image_size, num_classes):
+	def __init__(
+			self, strides, image_size, num_classes,
+			device=None, dtype=None):
 		super(Mapper, self).__init__()
 
 		self.strides = strides
@@ -17,6 +19,13 @@ class Mapper(nn.Module, LevelMapOperations):
 		self.num_classes = num_classes
 
 		self.level_thresholds = self._calc_level_thresholds(strides, image_size)
+
+		self._empty_maps = None
+		self._grid_maps = None
+
+		if device is not None or dtype is not None:
+			self._empty_maps = self._create_empty_maps(device, dtype)
+			self._grid_maps = self._create_grid_maps(device, dtype)
 
 	def forward(self, x):
 		"""Maps groud-truth targets to a bunch of per-level map tensors.
@@ -76,6 +85,42 @@ class Mapper(nn.Module, LevelMapOperations):
 		size = image_size // stride
 		return torch.full((size, size, num_cell_elements), value)
 
+	def _create_empty_maps(self, device, dtype):
+		result = []
+
+		for level in range(self.num_levels):
+			s = self.strides[level]
+
+			cls_level_map = self._create_level_map(
+				s, self.image_size, num_cell_elements=self.num_classes)
+			cls_level_map = cls_level_map.to(device=device, dtype=dtype)
+
+			reg_level_map = self._create_level_map(
+				s, self.image_size, num_cell_elements=4)
+			reg_level_map = reg_level_map.to(device=device, dtype=dtype)
+
+			centerness_level_map = self._create_level_map(s, self.image_size)
+			centerness_level_map = centerness_level_map.to(
+				device=device, dtype=dtype)
+
+			result.append((reg_level_map, centerness_level_map, cls_level_map))
+
+		return tuple(result)
+
+	def _create_grid_maps(self, device, dtype):
+		result = []
+
+		for level in range(self.num_levels):
+			s = self.strides[level]
+
+			mx, my = self._create_level_reg_maps(s, self.image_size)
+			mx = mx.to(device=device, dtype=dtype)
+			my = my.to(device=device, dtype=dtype)
+
+			result.append((mx, my))
+
+		return tuple(result)
+
 	@staticmethod
 	def _calc_area(box):
 		return (box[2] - box[0]) * (box[3] - box[1])
@@ -120,36 +165,37 @@ class Mapper(nn.Module, LevelMapOperations):
 			self._pointwise_fit_in_level(level_map, level)
 
 	def _map_sample(self, gt_boxes, gt_labels):
-		level_maps = []
+		result = []
 
 		gt_boxes *= self.image_size
 		for level in range(self.num_levels):
 			s = self.strides[level]
 
-			cls_level_map = self._create_level_map(
-				s, self.image_size, num_cell_elements=self.num_classes)
-			reg_level_map = self._create_level_map(
-				s, self.image_size, num_cell_elements=4)
-			centerness_level_map = self._create_level_map(s, self.image_size)
+			if self._empty_maps is None:
+				if len(gt_boxes) == 0:
+					raise RuntimeError(
+						"'device' and 'dtype' of level maps neither specified "
+						"nor may be inferred due to no positive targets "
+						"in the very first sample: either specify them "
+						"explicitly or provide samples with at least one "
+						"positive target")
+
+				self._empty_maps = self._create_empty_maps(
+					gt_boxes[0].device, gt_boxes[0].dtype)
+				self._grid_maps = self._create_grid_maps(
+					gt_boxes[0].device, gt_boxes[0].dtype)
+
+			empty_maps = self._empty_maps[level]
+			reg_empty_map, centerness_empty_map, cls_empty_map = empty_maps
+
+			grid_maps = self._grid_maps[level]
+
+			mx, my = grid_maps
 
 			for box, label in sorted(
 					zip(gt_boxes, gt_labels),
 					key=lambda v: Mapper._calc_area(v[0]),
 					reverse=True):
-				if cls_level_map.device != label.device:
-					cls_level_map = cls_level_map.to(label.device)
-
-				if reg_level_map.device != box.device:
-					reg_level_map = reg_level_map.to(box.device)
-
-				if centerness_level_map.device != box.device:
-					centerness_level_map = centerness_level_map.to(box.device)
-
-				mx, my = self._create_level_reg_maps(s, self.image_size)
-
-				mx = mx.to(box.device)
-				my = my.to(box.device)
-
 				l = mx - box[0]
 				t = my - box[1]
 				r = box[2] - mx
@@ -161,10 +207,10 @@ class Mapper(nn.Module, LevelMapOperations):
 
 				pred = self._mask(reg_slab, level)
 
-				cls_level_map = torch.where(pred, cls_slab, cls_level_map)
-				reg_level_map = torch.where(pred, reg_slab, reg_level_map)
+				cls_level_map = torch.where(pred, cls_slab, cls_empty_map)
+				reg_level_map = torch.where(pred, reg_slab, reg_empty_map)
 				centerness_level_map = torch.where(
-					pred, centerness_slab, centerness_level_map)
+					pred, centerness_slab, centerness_empty_map)
 
 			level_map = torch.cat([
 				reg_level_map,
@@ -173,6 +219,6 @@ class Mapper(nn.Module, LevelMapOperations):
 
 			level_map = level_map.permute(2, 0, 1)
 
-			level_maps.append(level_map)
+			result.append(level_map)
 
-		return level_maps
+		return result

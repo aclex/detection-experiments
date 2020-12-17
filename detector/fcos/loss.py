@@ -26,6 +26,8 @@ class Loss(nn.Module):
 		self.image_size = image_size
 		self.num_classes = num_classes
 
+		self._unmapper = Unmapper(strides, image_size, num_classes)
+
 	def forward(self, x, y):
 		"""Calculates composite loss value
 
@@ -38,10 +40,8 @@ class Loss(nn.Module):
 				levels, B - batch size
 
 		"""
-		reg_pred, centerness_pred, cls_pred = Loss._flatten(
-			x, self.strides, self.image_size, self.num_classes)
-		reg_target, centerness_target, cls_target = Loss._flatten(
-			y, self.strides, self.image_size, self.num_classes)
+		reg_pred, centerness_pred, cls_pred = self._flatten(x)
+		reg_target, centerness_target, cls_target = self._flatten(y)
 
 		centerness_sum = centerness_target.sum()
 
@@ -87,26 +87,25 @@ class Loss(nn.Module):
 	def _apply_mask(reg, centerness, cls, mask):
 		return reg[mask], centerness[mask], cls[mask]
 
-	@staticmethod
-	def _flatten(level_maps, strides, image_size, num_classes):
+	def _flatten(self, level_maps):
 		reg_levels = []
 		centerness_levels = []
 		cls_levels = []
 
 		for l, joint_map in enumerate(level_maps):
-			s = strides[l]
+			s = self.strides[l]
 
 			joint_map = joint_map.permute(0, 2, 3, 1)
-			sp = LevelMapOperations.split_joint_tensor(joint_map, num_classes)
+			sp = LevelMapOperations.split_joint_tensor(
+				joint_map, self.num_classes)
 			reg_level_map, centerness_level_map, cls_level_map = sp
 
 			# [l, r, t, b] -> [x1, y1, x2, y2]
-			reg_level_map = Unmapper._unmap_reg_level(
-				reg_level_map, s, image_size)
+			reg_level_map = self._unmapper._unmap_reg_level(l, reg_level_map)
 
 			reg_levels.append(reg_level_map.reshape(-1, 4))
 			centerness_levels.append(centerness_level_map.reshape(-1, 1))
-			cls_levels.append(cls_level_map.reshape(-1, num_classes))
+			cls_levels.append(cls_level_map.reshape(-1, self.num_classes))
 
 		reg_flat = torch.cat(reg_levels, dim=0)
 		centerness_flat = torch.cat(centerness_levels, dim=0)
