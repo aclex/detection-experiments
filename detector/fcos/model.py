@@ -20,6 +20,8 @@ class MobileNetV3SmallBiFPNFCOS(Model):
 		num_levels = 3
 		num_blocks = 2
 
+		self.arch_name = "mb3-small-bifpn-fcos"
+
 		def fpn_builder(
 				feature_channels, feature_strides, out_channels,
 				conv, norm, act):
