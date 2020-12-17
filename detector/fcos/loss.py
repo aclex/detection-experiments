@@ -54,17 +54,17 @@ class Loss(nn.Module):
 		reg_target, centerness_target, cls_target = Loss._apply_mask(
 			reg_target, centerness_target, cls_target, mask)
 
-		reg_loss = self.reg_loss(reg_target, reg_pred)
+		reg_loss = self.reg_loss(reg_pred, reg_target)
 		reg_loss = torch.sum(reg_loss.flatten())
 		if centerness_sum != 0:
 			reg_loss /= centerness_sum
 
 		centerness_loss = self.centerness_loss(
-			centerness_target, centerness_pred)
+			centerness_pred, centerness_target)
 		if num_elements != 0:
 			centerness_loss /= num_elements
 
-		cls_loss = self.cls_loss(cls_target, cls_pred)
+		cls_loss = self.cls_loss(cls_pred, cls_target)
 		if num_elements != 0:
 			cls_loss /= num_elements
 
