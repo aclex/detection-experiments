@@ -31,18 +31,32 @@ def expected_class():
 
 @pytest.fixture
 def expected_labels(expected_class):
-	label_list = [expected_class] * 4
+	label_list = [expected_class] * 8
 	return torch.tensor(label_list)
 
 
 @pytest.fixture
-def expected_box():
+def expected_box1():
 	return torch.tensor([5., 11., 200., 210.], dtype=torch.float32)
 
 
 @pytest.fixture
-def expected_reg(expected_box):
-	return expected_box.unsqueeze(dim=0).expand(4, -1)
+def expected_box2():
+	return torch.tensor([149., 40., 227., 121.], dtype=torch.float32)
+
+
+@pytest.fixture
+def expected_reg(expected_box1, expected_box2):
+	return torch.stack([
+		expected_box2,
+		expected_box2,
+		expected_box1,
+		expected_box1,
+		expected_box2,
+		expected_box2,
+		expected_box1,
+		expected_box1
+	])
 
 
 def test_unmap_level(
@@ -54,7 +68,7 @@ def test_unmap_level(
 	labels = torch.argmax(cls, dim=-1)
 
 	assert len(cls) == len(reg)
-	assert len(reg) == 4
+	assert len(reg) == len(expected_reg)
 
 	assert torch.equal(labels, expected_labels)
 	assert torch.allclose(reg, expected_reg)
