@@ -27,9 +27,9 @@ class SSD(nn.Module):
 		feature_channels = self.backbone.feature_channels()
 
 		self.extras = Extension(
-			4,
-			in_channels=[feature_channels[-1], 512, 256, 256],
-			out_channels=[512, 256, 256, 64])
+			bootstrap_channels=feature_channels[-1],
+			out_channels=[512, 256, 256, 64],
+			conv=SeparableConv2d)
 
 		self.classification_headers = nn.ModuleList([
 			SeparableConv2d(in_channels=feature_channels[-2],
@@ -71,6 +71,7 @@ class SSD(nn.Module):
 		locations = []
 
 		cs = self.backbone.forward(x)
+		cs = cs[-2:]
 
 		for i, c in enumerate(cs):
 			confidence, location = self.compute_header(i, c)
