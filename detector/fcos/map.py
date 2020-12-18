@@ -192,6 +192,10 @@ class Mapper(nn.Module, LevelMapOperations):
 
 			mx, my = grid_maps
 
+			cls_level_map = cls_empty_map
+			reg_level_map = reg_empty_map
+			centerness_level_map = centerness_empty_map
+
 			for box, label in sorted(
 					zip(gt_boxes, gt_labels),
 					key=lambda v: Mapper._calc_area(v[0]),
@@ -207,10 +211,10 @@ class Mapper(nn.Module, LevelMapOperations):
 
 				pred = self._mask(reg_slab, level)
 
-				cls_level_map = torch.where(pred, cls_slab, cls_empty_map)
-				reg_level_map = torch.where(pred, reg_slab, reg_empty_map)
+				cls_level_map = torch.where(pred, cls_slab, cls_level_map)
+				reg_level_map = torch.where(pred, reg_slab, reg_level_map)
 				centerness_level_map = torch.where(
-					pred, centerness_slab, centerness_empty_map)
+					pred, centerness_slab, centerness_level_map)
 
 			level_map = torch.cat([
 				reg_level_map,
