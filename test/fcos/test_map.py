@@ -17,7 +17,7 @@ from test.fcos.level_map_fixtures import (
 
 @pytest.fixture
 def expected_level_thresholds():
-	return ((2, 4), (2, 4), (2, 4), (2, 4))
+	return ((1, 4), (2, 4), (2, 4), (2, 4))
 
 
 @pytest.fixture

@@ -32,7 +32,7 @@ def test_onnx_export(model):
 	torch.onnx.export(
 		model, a, "test.onnx",
 		input_names=["img"],
-		output_names=["p1", "p2", "p3", "p4", "p5"],
+		output_names=["p1", "p2", "p3"],
 		opset_version=11,
 		do_constant_folding=True,
 		keep_initializers_as_inputs=True)
