@@ -7,7 +7,9 @@ from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
 from nn.separable_conv_2d import SeparableConv2d
 
 from detector.model import Model
+
 from detector.fcos.head import Head
+from detector.fcos.unmap import Unmapper
 
 from fpn.bifpn import BiFPN
 
@@ -41,3 +43,27 @@ class MobileNetV3SmallBiFPNFCOS(Model):
 		super(MobileNetV3SmallBiFPNFCOS, self).__init__(
 			backbone, fpn_builder, head_builder, num_levels=num_levels,
 			fpn_channels=num_channels, conv=conv)
+
+
+class MobileNetV3SmallBiFPNFCOSInference(MobileNetV3SmallBiFPNFCOS):
+	def __init__(
+			self, num_classes, batch_size=None,
+			num_channels=Head.DEFAULT_WIDTH):
+		super(MobileNetV3SmallBiFPNFCOSInference, self).__init__(
+			num_classes, num_channels)
+
+		self.batch_size = batch_size
+		self._unmapper = None
+
+
+	def forward(self, x):
+		output = super(MobileNetV3SmallBiFPNFCOSInference).forward(x)
+
+		if self._unmapper is None:
+			self._unmapper = Unmapper(
+				strides=self.strides, image_size=x.size(-1),
+				num_classes=num_classes,
+				batch_size=self.batch_size or x.size(0),
+				device=x.device, dtype=x.dtype)
+
+		return self._unmapper.forward(output)
