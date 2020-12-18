@@ -68,11 +68,11 @@ class Loss(nn.Module):
 		if num_elements != 0:
 			cls_loss /= num_elements
 
-		return (
-			self._combine(reg_loss, centerness_loss, cls_loss),
-			reg_loss,
-			centerness_loss,
-			cls_loss)
+		return {
+			"total": self._combine(reg_loss, centerness_loss, cls_loss),
+			"reg": reg_loss,
+			"centerness": centerness_loss,
+			"cls": cls_loss }
 
 	@staticmethod
 	def _combine(reg_loss, centerness_loss, cls_loss):

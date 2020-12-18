@@ -54,15 +54,17 @@ def train(loader, net, mapper, criterion, optimizer, device, epoch=-1):
 		optimizer.zero_grad()
 		pred = net.forward(images)
 		target = mapper.forward((boxes, labels))
-		loss, reg_loss, cls_loss, centerness_loss = criterion.forward(
-			pred, target)
-		loss.backward()
+		loss_dict = criterion.forward(pred, target)
+
+		assert "total" in loss_dict
+
+		loss_dict["total"].backward()
 		optimizer.step()
 
-		running_loss += loss.item()
-		running_reg_loss += reg_loss.item()
-		running_cls_loss += cls_loss.item()
-		running_centerness_loss += centerness_loss.item()
+		running_loss += loss_dict["total"].item()
+		running_reg_loss += loss_dict["reg"].item()
+		running_cls_loss += loss_dict["cls"].item()
+		running_centerness_loss += loss_dict["centerness"].item()
 
 	avg_loss = running_loss / num
 	avg_reg_loss = running_reg_loss / num

@@ -18,6 +18,6 @@ def expected():
 
 
 def test_sanity(loss, output_sample, expected):
-	r = loss.forward(output_sample, output_sample)
+	loss_dict = loss.forward(output_sample, output_sample)
 
-	assert torch.allclose(r, expected, rtol=1e-4)
+	assert torch.allclose(loss_dict["total"], expected, rtol=1e-4)
