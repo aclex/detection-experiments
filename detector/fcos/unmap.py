@@ -108,6 +108,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 		centered_cls_level_map = centered_cls_level_map[mask]
 
 		reg = reg_level_map.reshape(-1, 4)
+		reg /= self.image_size # convert to relative coordinates
 		cls = centered_cls_level_map.reshape(-1, self.num_classes)
 
 		return reg, cls

@@ -36,13 +36,15 @@ def expected_labels(expected_class):
 
 
 @pytest.fixture
-def expected_box1():
-	return torch.tensor([5., 11., 200., 210.], dtype=torch.float32)
+def expected_box1(image_size):
+	return torch.tensor(
+		[5., 11., 200., 210.], dtype=torch.float32) / image_size
 
 
 @pytest.fixture
-def expected_box2():
-	return torch.tensor([149., 40., 227., 121.], dtype=torch.float32)
+def expected_box2(image_size):
+	return torch.tensor(
+		[149., 40., 227., 121.], dtype=torch.float32) / image_size
 
 
 @pytest.fixture
