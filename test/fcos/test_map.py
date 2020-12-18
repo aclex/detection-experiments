@@ -27,7 +27,7 @@ def expected_level_map_sizes():
 
 @pytest.fixture
 def expected_area():
-	return 195 * 199
+	return 195 * 199 / (256 ** 2)
 
 
 @pytest.fixture
