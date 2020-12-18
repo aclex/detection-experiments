@@ -16,7 +16,7 @@ class Extension(nn.Module):
 
 		self.levels = nn.ModuleList([
 			conv(
-				out_channels[i] if i > 0 else bootstrap_channels,
+				out_channels[i - 1] if i > 0 else bootstrap_channels,
 				out_channels[i], kernel_size=kernel_sizes[i],
 				padding=paddings[i], stride=strides[i])
 			for i in range(self.num_levels)
