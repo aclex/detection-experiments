@@ -24,7 +24,9 @@ from dataset.coco import CocoDetection
 from transform.collate import collate
 
 import detector.ssd.config as config
-from detector.ssd.data_preprocessing import TrainAugmentation, TestTransform
+
+import processing.train
+import processing.test
 
 from storage.util import save
 
@@ -218,13 +220,13 @@ def main():
 		print("Dataset style %s is not supported" % args.dataset_style)
 		sys.exit(-1)
 
-	train_transform = TrainAugmentation(config.image_size,
-	                                    config.image_mean, config.image_std,
-	                                    bbox_format=bbox_format)
+	train_transform = processing.train.Pipeline(
+		config.image_size, config.image_mean, config.image_std,
+		bbox_format=bbox_format)
 
-	test_transform = TestTransform(config.image_size,
-	                               config.image_mean, config.image_std,
-	                               bbox_format=bbox_format)
+	test_transform = processing.test.Pipeline(
+		config.image_size, config.image_mean, config.image_std,
+		bbox_format=bbox_format)
 
 	logging.info("Loading datasets...")
 
