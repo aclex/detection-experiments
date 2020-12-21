@@ -3,8 +3,9 @@ import torch
 from backbone.ghostnet import GhostNet
 
 from detector.ssd.ssd import SSD, SSDInference
-from detector.ssd.predictor import Predictor
 import detector.ssd.config as config
+
+from predict.predictor import Predictor
 
 
 def create_ghostnet_ssd_lite(num_classes,
