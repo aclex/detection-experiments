@@ -30,7 +30,9 @@ class MultiboxLoss(nn.Module):
 
 		self.priors = priors
 
-	def forward(self, confidence, predicted_locations, labels, gt_boxes):
+	def forward(self, x, y):
+		confidence, predicted_locations = x
+		gt_boxes, labels = y
 		locations, labels = self.match_prior(gt_boxes, labels)
 
 		return self._apply(confidence, predicted_locations, labels, locations)
@@ -58,8 +60,21 @@ class MultiboxLoss(nn.Module):
 		gt_locations = gt_locations[pos_mask, :].reshape(-1, 4)
 		smooth_l1_loss = F.smooth_l1_loss(predicted_locations, gt_locations, reduction='sum')
 
+		result = {
+			"reg": smooth_l1_loss,
+			"cls": classification_loss
+		}
+
 		num_pos = gt_locations.size(0)
 		if num_pos > 0:
-			return smooth_l1_loss / num_pos, classification_loss / num_pos
-		else:
-			return smooth_l1_loss, classification_loss
+			result["reg"] /= num_pos
+			result["cls"] /= num_pos
+
+		result.update({"total": (result["reg"] + result["cls"])})
+
+		return result
+
+	@staticmethod
+	def _combine(reg_loss, cls_loss):
+		return reg_loss + cls_loss
+

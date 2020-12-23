@@ -47,8 +47,8 @@ class FCOS(CoreSettings):
 			num_blocks=CompoundScaling.head_depth(pheta),
 			fpn=fpn, conv=conv, norm=norm, act=act)
 
-	def loss(self, net):
+	def loss(self, net, device=None):
 		return Loss(net.strides, self.image_size, net.head.num_classes)
 
-	def mapper(self, net):
+	def mapper(self, net, device=None):
 		return Mapper(net.strides, self.image_size, net.head.num_classes)

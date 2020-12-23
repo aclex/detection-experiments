@@ -267,9 +267,8 @@ def main():
 
 	last_epoch = -1
 
-	criterion = arch.loss(net)
-
-	mapper = arch.mapper(net)
+	criterion = arch.loss(net, device)
+	mapper = arch.mapper(net, device)
 
 	optim_kwargs = {
 		"lr": args.lr,
