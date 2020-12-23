@@ -30,6 +30,7 @@ class Tower(nn.Sequential):
 
 
 class Head(nn.Module):
+	DEFAULT_NUM_LEVELS = 5
 	DEFAULT_NUM_BLOCKS = 4
 	DEFAULT_WIDTH = 256
 	DEFAULT_STRIDES = [8, 16, 32, 64, 128]
