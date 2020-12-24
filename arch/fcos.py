@@ -45,7 +45,7 @@ class FCOS(CoreSettings):
 			num_levels=CompoundScaling.fpn_height(self.pheta),
 			num_fpn_layers=CompoundScaling.fpn_depth(self.pheta),
 			num_blocks=CompoundScaling.head_depth(self.pheta),
-			fpn=fpn, conv=conv, norm=norm, act=act)
+			fpn=self.fpn, conv=self.conv, norm=self.norm, act=self.act)
 
 	def loss(self, net, device=None):
 		return Loss(net.strides, self.image_size, net.head.num_classes)
