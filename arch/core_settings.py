@@ -28,4 +28,4 @@ class CoreSettings():
 		self.image_std = self.settings.get("image_std", self.DEFAULT_STD)
 
 	def predictor(self, net, device=None):
-		return Predictor(net=net, device=device)
+		return Predictor(arch=self, net=net, device=device)

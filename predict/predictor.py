@@ -7,12 +7,15 @@ import processing.predict
 
 class Predictor:
 	def __init__(
-			self, net, nms_method=None, iou_threshold=0.45,
+			self, arch, net,
+			nms_method=None, iou_threshold=0.45,
 			filter_threshold=0.01, candidate_size=200, sigma=0.5,
 			device="cpu"):
 		self.net = net
 		self.transform = processing.predict.Pipeline(
-			net.config.image_size, net.config.image_mean, net.config.image_std)
+			[arch.image_size] * 2,
+			arch.image_mean,
+			arch.image_std)
 
 		self.iou_threshold = iou_threshold
 		self.filter_threshold = filter_threshold
