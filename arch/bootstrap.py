@@ -4,6 +4,8 @@ import importlib
 
 import json
 
+from arch.core_settings import json_from_file_or_string
+
 
 def _igetattr(obj, attr):
     for a in dir(obj):
@@ -12,10 +14,9 @@ def _igetattr(obj, attr):
 
 
 def get_arch_name(config):
-	with open(config, 'r') as f:
-		settings = json.load(f)
+	settings = json_from_file_or_string(config)
 
-		return settings["arch"]
+	return settings["arch"]
 
 
 def get_arch(config):
