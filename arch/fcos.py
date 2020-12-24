@@ -20,31 +20,31 @@ from arch.parse import (
 
 class FCOS(CoreSettings):
 	def __init__(self, config):
-		with open(config, 'r') as f:
-			self.settings = json.load(f)
+		super(FCOS, self).__init__(config)
 
-		self.name = os.path.splitext(os.path.basename(config))[0]
+		self.backbone_class = parse_backbone(self.settings["backbone"])
 
-		super(FCOS, self).__init__()
+		self.fpn = parse_fpn_class(self.settings["fpn"])
 
-	def build(self, num_classes, pretrained_backbone=False):
-		backbone_class = parse_backbone(self.settings["backbone"])
-		backbone = backbone_class(pretrained=pretrained_backbone)
+		self.conv = parse_conv(self.settings.get("conv", None))
+		self.norm = parse_norm(self.settings.get("norm", None))
+		self.act = parse_act(self.settings.get("act", None))
 
-		fpn = parse_fpn_class(self.settings["fpn"])
+		self.pheta = CompoundScaling.pheta(self.image_size)
 
-		conv = parse_conv(self.settings.get("conv", None))
-		norm = parse_norm(self.settings.get("norm", None))
-		act = parse_act(self.settings.get("act", None))
+	def build(
+			self, num_classes, pretrained_backbone=False,
+			batch_size=1, inference=False):
+		backbone = self.backbone_class(pretrained=pretrained_backbone)
 
-		pheta = CompoundScaling.pheta(self.image_size)
+		ctor = BlueprintInference if inference else Blueprint
 
-		return Blueprint(
+		return ctor(
 			self.name, backbone, num_classes,
-			num_channels=CompoundScaling.fpn_width(pheta),
-			num_levels=CompoundScaling.fpn_height(pheta),
-			num_fpn_layers=CompoundScaling.fpn_depth(pheta),
-			num_blocks=CompoundScaling.head_depth(pheta),
+			num_channels=CompoundScaling.fpn_width(self.pheta),
+			num_levels=CompoundScaling.fpn_height(self.pheta),
+			num_fpn_layers=CompoundScaling.fpn_depth(self.pheta),
+			num_blocks=CompoundScaling.head_depth(self.pheta),
 			fpn=fpn, conv=conv, norm=norm, act=act)
 
 	def loss(self, net, device=None):

@@ -25,26 +25,24 @@ from arch.parse import (
 
 class SSD(CoreSettings):
 	def __init__(self, config):
-		with open(config, 'r') as f:
-			self.settings = json.load(f)
+		super(SSD, self).__init__(config)
 
-		self.name = os.path.splitext(os.path.basename(config))[0]
+		self.backbone_class = parse_backbone(self.settings["backbone"])
 
-		super(SSD, self).__init__()
+	def build(
+			self, num_classes, pretrained_backbone=False,
+			batch_size=1, inference=False):
+		backbone = self.backbone_class(pretrained=pretrained_backbone)
 
-	def build(self, num_classes, pretrained_backbone=False):
-		backbone_class = parse_backbone(self.settings["backbone"])
-		backbone = backbone_class(pretrained=pretrained_backbone)
+		ctor = ssd.SSDInference if inference else ssd.SSD
 
-		return ssd.SSD(
-			num_classes, backbone, self.name,
-			config=config)
+		return ctor(num_classes, backbone, self.name, batch_size, config)
 
 	def loss(self, net, device=None):
 		priors = config.priors.to(device=device, dtype=torch.float32)
 		return MultiboxLoss(
 			priors, iou_threshold=0.5, neg_pos_ratio=3,
 			center_variance=0.1, size_variance=0.2)
- 
+
 	def mapper(self, net, device=None):
 		return nn.Identity()

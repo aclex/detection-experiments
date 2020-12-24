@@ -7,11 +7,7 @@ import torch
 
 from detector.ssd.utils.misc import Timer
 
-from detector.ssd.mobilenetv3_ssd_lite import (
-	create_mobilenetv3_large_ssd_lite,
-	create_mobilenetv3_small_ssd_lite,
-	create_mobilenetv3_ssd_lite_predictor
-)
+from arch.bootstrap import get_arch
 
 from storage.util import load
 

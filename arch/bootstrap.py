@@ -20,7 +20,6 @@ def get_arch_name(config):
 
 def get_arch(config):
 	name = get_arch_name(config)
-
 	spec = importlib.util.spec_from_file_location(
 		name,
 		os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{name}.py"))

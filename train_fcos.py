@@ -252,7 +252,7 @@ def main():
 
 	logging.info("Building network")
 	backbone_pretrained = args.backbone_pretrained is not None
-	net = arch.build(num_classes, backbone_pretrained)
+	net = arch.build(num_classes, backbone_pretrained, args.batch_size)
 
 	if backbone_pretrained and args.backbone_weights is not None:
 		logging.info(f"Load backbone weights from {args.backbone_weights}")
@@ -313,7 +313,7 @@ def main():
 			val_loss = loop(val_loader, net, mapper, criterion, device=device)
 			filename = f"{arch.name}-Epoch-{epoch}-Loss-{val_loss}.pth"
 			model_path = os.path.join(args.checkpoint_path, filename)
-			save(net, dataset.class_names, model_path)
+			save(arch, net, dataset.class_names, model_path)
 			logging.info(f"Saved model {model_path}")
 
 
