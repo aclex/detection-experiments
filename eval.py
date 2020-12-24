@@ -6,11 +6,8 @@ import logging
 import torch
 
 from detector.ssd.utils.misc import Timer
-from detector.ssd.mobilenetv3_ssd_lite import (
-	create_mobilenetv3_large_ssd_lite,
-	create_mobilenetv3_small_ssd_lite,
-	create_mobilenetv3_ssd_lite_predictor
-)
+
+from arch.bootstrap import get_arch
 
 from dataset.voc import VOCDetection
 from dataset.coco import CocoDetection
@@ -76,8 +73,8 @@ def main():
 		                        ann_file="%s.json" % args.image_set)
 
 
-	model, class_names = load(args.model_path, device=device,
-	                          inference=True)
+	arch, model, class_names = load(
+		args.model_path, device=device, inference=True)
 	model.eval()
 
 	if dataset.class_names != class_names:
@@ -86,8 +83,7 @@ def main():
 		      "No chance to get valid results, so I give up.")
 		sys.exit(-1)
 
-	predictor = create_mobilenetv3_ssd_lite_predictor(
-		model, nms_method=args.nms_method, device=device)
+	predictor = arch.predictor(model, device=device)
 
 	if args.metric == 'pascal-voc':
 		logging.info("Calculating Pascal VOC metric...")
