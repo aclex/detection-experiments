@@ -2,7 +2,7 @@ import json
 
 import torch
 
-from storage.factory import get_arch
+from arch.bootstrap import get_arch
 
 
 def load(model_file, batch_size=None, inference=False, device=None):
@@ -17,7 +17,7 @@ def load(model_file, batch_size=None, inference=False, device=None):
 	model.load_state_dict(pack["state_dict"], strict=True)
 	model.to(device)
 
-	return model, class_names
+	return arch, model, class_names
 
 
 def save(arch, model, class_names, filename):

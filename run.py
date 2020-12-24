@@ -73,13 +73,11 @@ def main():
 		print("Can process either image or video, but not both")
 		sys.exit(-1)
 
-	model, class_names = load(args.model_path, device=device,
-	                          inference=True)
+	arch, model, class_names = load(
+		args.model_path, device=device, inference=True)
 	model.eval()
 
-	predictor = create_mobilenetv3_ssd_lite_predictor(
-		model, candidate_size=200,
-		device=device)
+	predictor = arch.predictor(model, device=device)
 
 	timer = Timer()
 
