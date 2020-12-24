@@ -35,19 +35,17 @@ class Unmapper(nn.Module, LevelMapOperations):
 		"""
 
 		predictions = ([], [])
-		for i in range(self.batch_size):
-			image_predictions = ([], [])
 
-			for level, maps in enumerate(x):
-				b, l = self._unmap_level(level, maps)
+		for level, maps in enumerate(x):
+			b, l = self._unmap_level(level, maps)
 
-				image_predictions[0].append(b)
-				image_predictions[1].append(l)
+			predictions[0].append(b)
+			predictions[1].append(l)
 
-			predictions[0].append(torch.cat(image_predictions[0], dim=0))
-			predictions[1].append(torch.cat(image_predictions[1], dim=0))
+		reg = torch.cat(predictions[0], dim=1)
+		cls = torch.cat(predictions[1], dim=1)
 
-		return predictions
+		return cls, reg
 
 	@classmethod
 	def _create_diff_map(cls, stride, image_size):
@@ -91,13 +89,15 @@ class Unmapper(nn.Module, LevelMapOperations):
 	def _unmap_level(self, level, maps):
 		s = self.strides[level]
 
-		maps = maps.permute(1, 2, 0)
+		maps = maps.permute(0, 2, 3, 1)
 		sp = self.split_joint_tensor(maps, self.num_classes)
 		reg_level_map, centerness_level_map, cls_level_map = sp
 
 		reg_level_map *= s
 
 		centered_cls_level_map = centerness_level_map * cls_level_map
+		centered_cls_level_map = torch.max(
+			centered_cls_level_map, torch.zeros_like(centered_cls_level_map))
 
 		mask = self._create_prefilter_mask(
 			centered_cls_level_map, self.prefilter_threshold)
@@ -107,8 +107,9 @@ class Unmapper(nn.Module, LevelMapOperations):
 		reg_level_map = reg_level_map[mask]
 		centered_cls_level_map = centered_cls_level_map[mask]
 
-		reg = reg_level_map.reshape(-1, 4)
+		reg = reg_level_map.reshape(self.batch_size, -1, 4)
 		reg /= self.image_size # convert to relative coordinates
-		cls = centered_cls_level_map.reshape(-1, self.num_classes)
+		cls = centered_cls_level_map.reshape(
+			self.batch_size, -1, self.num_classes)
 
 		return reg, cls

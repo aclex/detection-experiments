@@ -58,14 +58,13 @@ class BlueprintInference(Blueprint):
 		self.batch_size = batch_size
 		self._unmapper = None
 
-
 	def forward(self, x):
-		output = super(BlueprintInference).forward(x)
+		output = super(BlueprintInference, self).forward(x)
 
 		if self._unmapper is None:
 			self._unmapper = Unmapper(
 				strides=self.strides, image_size=x.size(-1),
-				num_classes=self.num_classes,
+				num_classes=self.head.num_classes,
 				batch_size=self.batch_size or x.size(0),
 				device=x.device, dtype=x.dtype)
 
