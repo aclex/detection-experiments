@@ -18,8 +18,7 @@ def main():
 
 	args = parser.parse_args()
 
-	model, class_names = load(args.model_path, batch_size=1,
-	                          inference=True, device='cpu')
+	arch, model, class_names = load(args.model_path, inference=True)
 	model.eval()
 
 	if args.output is None:
@@ -29,13 +28,15 @@ def main():
 		if not output_path.endswith(".onnx"):
 			output_path += ".onnx"
 
-	dummy_input = torch.randn(1, 3, 300, 300).to(dtype=torch.float32)
+	dummy_input = torch.randn(1, 3, arch.image_size, arch.image_size).to(
+		dtype=torch.float32)
 	model.to(dtype=torch.float32)
 
+	print("ss", arch.output_names())
 	torch.onnx.export(model, dummy_input, output_path,
-	                  input_names=["img"],
-	                  output_names=["cls", "box"],
-	                  opset_version=9,
+	                  input_names=arch.input_names(),
+	                  output_names=arch.output_names(),
+	                  opset_version=11,
 	                  do_constant_folding=True,
 	                  keep_initializers_as_inputs=True)
 

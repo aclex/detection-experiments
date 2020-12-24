@@ -29,3 +29,11 @@ class CoreSettings():
 
 	def predictor(self, net, device=None):
 		return Predictor(arch=self, net=net, device=device)
+
+	@staticmethod
+	def input_names():
+		return ["img"]
+
+	@staticmethod
+	def output_names():
+		return ["cls", "reg"]
