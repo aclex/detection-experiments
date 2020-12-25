@@ -93,7 +93,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 		sp = self.split_joint_tensor(maps, self.num_classes)
 		reg_level_map, centerness_level_map, cls_level_map = sp
 
-		reg_level_map *= s
+		reg_level_map = reg_level_map * s
 
 		centered_cls_level_map = centerness_level_map * cls_level_map
 		centered_cls_level_map = torch.max(
