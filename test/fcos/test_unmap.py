@@ -64,9 +64,14 @@ def expected_reg(expected_box1, expected_box2):
 def test_unmap_level(
 		unmapper, expected_joint_map_8x8,
 		expected_labels, expected_reg):
-	pred_targets = unmapper._unmap_level(2, expected_joint_map_8x8)
+	pred_targets = unmapper._unmap_level(2, expected_joint_map_8x8.unsqueeze(
+		dim=0))
 
 	reg, cls = pred_targets
+
+	cls = cls.squeeze(dim=0)
+	reg = reg.squeeze(dim=0)
+
 	labels = torch.argmax(cls, dim=-1)
 
 	assert len(cls) == len(reg)

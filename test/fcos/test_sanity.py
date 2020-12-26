@@ -2,13 +2,18 @@ import pytest
 
 import torch
 
-from detector.fcos.model import MobileNetV3SmallBiFPNFCOS
+from backbone.rw_mobilenetv3 import MobileNetV3_Small
+from nn.separable_conv_2d import SeparableConv2d
+from detector.fcos.model import Blueprint
 
 
 @pytest.fixture
 def model():
-	m = MobileNetV3SmallBiFPNFCOS(num_classes=2, num_channels=128)
-	m.arch_name = "test"
+	b = MobileNetV3_Small(pretrained=False)
+	m = Blueprint(
+		"test", b, 2,
+		num_channels=48, num_levels=3, num_fpn_layers=1, num_blocks=2,
+		conv=SeparableConv2d)
 	m.class_names = ["background", "person"]
 
 	return m
