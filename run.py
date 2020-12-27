@@ -1,15 +1,60 @@
 import sys
+import os
 import argparse
+
+from collections import namedtuple
 
 import cv2
 
 import torch
 
+try:
+	import onnxruntime
+except ImportError:
+	onnxruntime = None
+
 from detector.ssd.utils.misc import Timer
 
 from arch.bootstrap import get_arch
+from arch.core_settings import CoreSettings
+from predict.predictor import Predictor
 
 from storage.util import load
+
+
+class ONNXModel():
+	def __init__(self, model_path):
+		self.session = onnxruntime.InferenceSession(model_path)
+
+		inputs = self.session.get_inputs()
+		self.input_name = inputs[0].name
+		self.image_size = inputs[0].shape[-1]
+
+		self.output_names = [o.name for o in self.session.get_outputs()]
+
+		cls_output = self.session.get_outputs()[0]
+		self.class_names = ["class%d" for i in range(cls_output.shape[-1])]
+
+	def arch(self):
+		arch_class = namedtuple(
+			'ONNXArch', ['image_size', 'image_mean', 'image_std'])
+
+		return arch_class(
+			self.image_size,
+			CoreSettings.DEFAULT_MEAN,
+			CoreSettings.DEFAULT_STD)
+
+	def to(self, device=None):
+		pass
+
+	def eval(self):
+		pass
+
+	def forward(self, x):
+		output = self.session.run(
+			self.output_names, { self.input_name : x.numpy() })
+
+		return torch.from_numpy(output[0]), torch.from_numpy(output[1])
 
 
 def draw_predictions(frame, boxes, labels, scores, class_names):
@@ -73,11 +118,25 @@ def main():
 		print("Can process either image or video, but not both")
 		sys.exit(-1)
 
-	arch, model, class_names = load(
-		args.model_path, device=device, inference=True)
-	model.eval()
+	_, ext = os.path.splitext(args.model_path)
 
-	predictor = arch.predictor(model, device=device)
+	onnx_model = (ext == ".onnx")
+
+	if onnx_model:
+		if onnxruntime is None:
+			raise RuntimeError(
+				"Running ONNX models requires 'onnxruntime' module, "
+				"which is not available")
+
+		model = ONNXModel(args.model_path)
+		arch = model.arch()
+		class_names = model.class_names
+
+	else:
+		arch, model, class_names = load(
+			args.model_path, device=device, inference=True)
+
+	predictor = Predictor(arch, model, device=device)
 
 	timer = Timer()
 
