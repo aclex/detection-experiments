@@ -1,0 +1,5 @@
+{
+	"arch" : "ssd",
+	"backbone" : "ghostnet-1.0",
+	"image_size" : 300
+}

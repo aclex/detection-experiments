@@ -1,0 +1,5 @@
+{
+	"arch" : "ssd",
+	"backbone" : "mobilenetv3-large",
+	"image_size" : 300
+}
