@@ -9,6 +9,8 @@ from detector.ssd.utils.misc import Timer
 
 from arch.bootstrap import get_arch
 
+from predict.predictor import Predictor
+
 from dataset.voc import VOCDetection
 from dataset.coco import CocoDetection
 
@@ -83,7 +85,7 @@ def main():
 		      "No chance to get valid results, so I give up.")
 		sys.exit(-1)
 
-	predictor = arch.predictor(model, device=device)
+	predictor = Predictor(arch, model, device=device)
 
 	if args.metric == 'pascal-voc':
 		logging.info("Calculating Pascal VOC metric...")
