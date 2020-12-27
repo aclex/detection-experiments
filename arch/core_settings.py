@@ -3,8 +3,6 @@ import json
 
 import numpy as np
 
-from predict.predictor import Predictor
-
 
 def json_from_file_or_string(config):
 	try:
@@ -26,9 +24,6 @@ class CoreSettings():
 		self.image_size = self.settings["image_size"]
 		self.image_mean = self.settings.get("image_mean", self.DEFAULT_MEAN)
 		self.image_std = self.settings.get("image_std", self.DEFAULT_STD)
-
-	def predictor(self, net, device=None):
-		return Predictor(arch=self, net=net, device=device)
 
 	@staticmethod
 	def input_names():
