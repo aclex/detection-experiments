@@ -32,7 +32,6 @@ def main():
 		dtype=torch.float32)
 	model.to(dtype=torch.float32)
 
-	print("ss", arch.output_names())
 	torch.onnx.export(model, dummy_input, output_path,
 	                  input_names=arch.input_names(),
 	                  output_names=arch.output_names(),
