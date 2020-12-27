@@ -18,8 +18,7 @@ from test.fcos.level_map_fixtures import (
 @pytest.fixture
 def unmapper(strides, image_size):
 	m = Unmapper(
-		strides, image_size, batch_size=1, num_classes=3,
-		prefilter_threshold=0.1)
+		strides, image_size, batch_size=1, num_classes=3)
 
 	return m
 
@@ -61,6 +60,11 @@ def expected_reg(expected_box1, expected_box2):
 	])
 
 
+def prefilter_mask(m, threshold):
+	mx, _ = m.max(dim=-1)
+	return mx >= threshold
+
+
 def test_unmap_level(
 		unmapper, expected_joint_map_8x8,
 		expected_labels, expected_reg):
@@ -68,6 +72,11 @@ def test_unmap_level(
 		dim=0))
 
 	reg, cls = pred_targets
+
+	mask = prefilter_mask(cls, 0.1)
+
+	reg = reg[mask]
+	cls = cls[mask]
 
 	cls = cls.squeeze(dim=0)
 	reg = reg.squeeze(dim=0)
