@@ -17,12 +17,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 		self.batch_size = batch_size
 		self.num_classes = num_classes
 
-		self._diff_maps = None
-		self._fix_sign = None
-
-		if device is not None or dtype is not None:
-			self._diff_maps = self._create_diff_maps(device, dtype)
-			self._fix_sign = self._create_fix_sign(device, dtype)
+		self._diff_maps = self._create_diff_maps()
 
 	def forward(self, x):
 		"""Maps a bunch of per-level map tensors back to per-image targets.
@@ -50,33 +45,23 @@ class Unmapper(nn.Module, LevelMapOperations):
 
 		return torch.cat([mx, my, mx, my], dim=-1)
 
-	def _create_diff_maps(self, device, dtype):
+	def _create_diff_maps(self):
 		result = []
 
 		for level in range(self.num_levels):
 			s = self.strides[level]
 
 			m = self._create_diff_map(s, self.image_size)
-			m = m.to(device=device, dtype=dtype)
 
 			result.append(m)
 
 		return tuple(result)
 
-	@staticmethod
-	def _create_fix_sign(device, dtype):
-		return torch.tensor([-1, -1, 1, 1]).to(device=device, dtype=dtype)
-
 	def _unmap_reg_level(self, level, reg_level_map):
-		if self._diff_maps is None or self._fix_sign is None:
-			self._diff_maps = self._create_diff_maps(
-				device=reg_level_map.device, dtype=reg_level_map.dtype)
-			self._fix_sign = self._create_fix_sign(
-				device=reg_level_map.device, dtype=reg_level_map.dtype)
+		reg_diff_map = self._diff_maps[level].to(reg_level_map)
+		fix_sign = reg_level_map.new_tensor([-1, -1, 1, 1])
 
-		reg_diff_map = self._diff_maps[level]
-
-		return self._fix_sign * reg_level_map + reg_diff_map
+		return fix_sign * reg_level_map + reg_diff_map
 
 	def _unmap_level(self, level, maps):
 		s = self.strides[level]
@@ -95,11 +80,9 @@ class Unmapper(nn.Module, LevelMapOperations):
 
 		reg_level_map = self._unmap_reg_level(level, reg_level_map)
 
-		help_onnx_infer_inner_dim = level_map_size ** 2
-		reg = reg_level_map.reshape(
-			self.batch_size, help_onnx_infer_inner_dim, 4)
+		reg = reg_level_map.reshape(self.batch_size, -1, 4)
 		reg /= self.image_size # convert to relative coordinates
 		cls = centered_cls_level_map.reshape(
-			self.batch_size, help_onnx_infer_inner_dim, self.num_classes)
+			self.batch_size, -1, self.num_classes)
 
 		return reg, cls
