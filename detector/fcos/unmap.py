@@ -73,6 +73,8 @@ class Unmapper(nn.Module, LevelMapOperations):
 		reg_level_map, centerness_level_map, cls_level_map = sp
 
 		reg_level_map = reg_level_map * s
+		centerness_level_map = centerness_level_map.sigmoid()
+		cls_level_map = cls_level_map.sigmoid()
 
 		centered_cls_level_map = centerness_level_map * cls_level_map
 		centered_cls_level_map = torch.max(
