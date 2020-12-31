@@ -54,6 +54,12 @@ class Predictor:
 		probs = probs[non_bg]
 		labels = labels[non_bg]
 
+		prefilter_mask = probs >= prob_threshold
+
+		boxes = boxes[prefilter_mask]
+		probs = probs[prefilter_mask]
+		labels = labels[prefilter_mask]
+
 		keep = batched_nms(boxes, probs, labels, self.iou_threshold)
 
 		boxes = boxes[keep].detach()
