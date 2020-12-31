@@ -309,8 +309,12 @@ def main():
 			optimizer, device=device, epoch=epoch)
 		scheduler.step()
 
-		if epoch % args.val_epochs == 0 or epoch == args.num_epochs - 1:
-			val_loss = loop(val_loader, net, mapper, criterion, device=device)
+		if (epoch > 0 and epoch % args.val_epochs == 0 or
+				epoch == args.num_epochs - 1):
+			val_loss = loop(
+				val_loader, net, mapper, criterion,
+				device=device, epoch=epoch)
+
 			filename = f"{arch.name}-Epoch-{epoch}-Loss-{val_loss}.pth"
 			model_path = os.path.join(args.checkpoint_path, filename)
 			save(arch, net, dataset.class_names, model_path)
