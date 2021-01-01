@@ -220,7 +220,7 @@ def main():
 
 	# don't allow the last batch be of length 1
 	# to not lead our dear BatchNorms to crash on that
-	drop_last = len(dataset) % args.batch_size == 1
+	drop_last = len(dataset) % args.batch_size > 0
 
 	train_loader = DataLoader(
 		dataset, args.batch_size, collate_fn=collate,
@@ -248,7 +248,7 @@ def main():
 	val_loader = DataLoader(
 		val_dataset, args.batch_size, collate_fn=collate,
 		num_workers=args.num_workers,
-		shuffle=False)
+		shuffle=False, drop_last=drop_last)
 
 	logging.info("Building network")
 	backbone_pretrained = args.backbone_pretrained is not None
