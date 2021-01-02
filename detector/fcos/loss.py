@@ -86,7 +86,7 @@ class Loss(nn.Module):
 
 	@staticmethod
 	def _apply_mask(reg, centerness, cls, mask):
-		return reg[mask], centerness[mask], cls[mask]
+		return reg[mask], centerness[mask], cls
 
 	def _flatten(self, level_maps):
 		reg_levels = []
