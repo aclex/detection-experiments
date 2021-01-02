@@ -93,6 +93,7 @@ class Mapper(nn.Module, LevelMapOperations):
 
 			cls_level_map = self._create_level_map(
 				s, self.image_size, num_cell_elements=self.num_classes)
+			cls_level_map[..., 0] = 1. # set all pixels to 'background' class
 			cls_level_map = cls_level_map.to(device=device, dtype=dtype)
 
 			reg_level_map = self._create_level_map(

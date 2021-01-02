@@ -80,7 +80,8 @@ class Loss(nn.Module):
 
 	@staticmethod
 	def _mask(reg_target, centerness_target, cls_target):
-		mx, _ = torch.max(cls_target, dim=-1)
+		# consider only non-background pixels
+		mx, _ = torch.max(cls_target[..., 1:], dim=-1)
 		return torch.nonzero(mx).flatten()
 
 	@staticmethod
