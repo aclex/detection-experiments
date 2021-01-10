@@ -18,7 +18,7 @@ def main():
 
 	args = parser.parse_args()
 
-	arch, model, class_names = load(args.model_path, inference=True)
+	arch, model, class_names = load(args.model_path, inference=True, device='cpu')
 	model.eval()
 
 	if args.output is None:
