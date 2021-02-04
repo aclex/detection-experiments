@@ -11,8 +11,7 @@ from arch.bootstrap import get_arch
 
 from predict.predictor import Predictor
 
-from dataset.voc import VOCDetection
-from dataset.coco import CocoDetection
+from dataset.loader import load as load_dataset
 
 from storage.util import load
 
@@ -66,14 +65,7 @@ def main():
 
 	timer = Timer()
 
-	if args.dataset_style == 'pascal-voc':
-		dataset = VOCDetection(root=args.dataset,
-		                       image_set=args.image_set)
-
-	elif args.dataset_style == 'coco':
-		dataset = CocoDetection(root=args.dataset,
-		                        ann_file="%s.json" % args.image_set)
-
+	dataset = load_dataset(args.dataset_style, args.dataset, args.image_set)
 
 	arch, model, class_names = load(
 		args.model_path, device=device, inference=True)

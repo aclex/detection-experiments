@@ -10,8 +10,7 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, MultiStepLR
 
 from detector.ssd.utils.misc import Timer
 
-from dataset.voc import VOCDetection
-from dataset.coco import CocoDetection
+from dataset.loader import load as load_dataset
 
 from transform.collate import collate
 
@@ -203,16 +202,11 @@ def main():
 
 	logging.info("Loading datasets...")
 
-	if args.dataset_style == 'pascal-voc':
-		dataset = VOCDetection(
-			root=args.dataset,
-			image_set=args.train_image_set,
-			transform=train_transform)
-	elif args.dataset_style == 'coco':
-		dataset = CocoDetection(
-			root=args.dataset,
-			ann_file="%s.json" % args.train_image_set,
-			transform=train_transform)
+	dataset = load_dataset(
+			args.dataset_style,
+			args.dataset,
+			args.train_image_set,
+			train_transform)
 
 	num_classes = len(dataset.class_names)
 
@@ -232,16 +226,11 @@ def main():
 	else:
 		val_dataset_root = args.dataset
 
-	if args.dataset_style == 'pascal-voc':
-		val_dataset = VOCDetection(
-			root=val_dataset_root,
-			image_set=args.val_image_set,
-			transform=test_transform)
-	elif args.dataset_style == 'coco':
-		val_dataset = CocoDetection(
-			root=val_dataset_root,
-			ann_file="%s.json" % args.val_image_set,
-			transform=test_transform)
+	val_dataset = load_dataset(
+			args.dataset_style,
+			val_dataset_root,
+			args.val_image_set,
+			test_transform)
 
 	logging.info("Validation dataset size: {}".format(len(val_dataset)))
 

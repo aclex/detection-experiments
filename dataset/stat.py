@@ -1,6 +1,13 @@
 import torch
 
-def get_mean_std(dataset):
+import albumentations as A
+
+from transform.to_tensor import ToTensor
+
+from dataset.loader import load
+
+
+def _get_mean_std(dataset):
 	'''Compute the mean and std value of dataset.'''
 	dataloader = torch.utils.data.DataLoader(dataset)
 
@@ -18,3 +25,14 @@ def get_mean_std(dataset):
 	std.div_(len(dataset))
 
 	return mean, std
+
+
+def mean_std(style, path, image_set):
+	pipeline = A.Compose([
+		A.Normalize(mean=(0., 0., 0.), std=(1., 1., 1.)),
+		ToTensor()
+	])
+
+	dataset = load(style, path, image_set, pipeline)
+
+	return _get_mean_std(dataset)
