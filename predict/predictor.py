@@ -10,12 +10,12 @@ class Predictor:
 			self, arch, net,
 			nms_method=None, iou_threshold=0.45,
 			filter_threshold=0.01, candidate_size=200, sigma=0.5,
+			mean=(0.5, 0.5, 0.5), std=(1., 1., 1.),
 			device="cpu"):
 		self.net = net
 		self.transform = processing.predict.Pipeline(
 			[arch.image_size] * 2,
-			arch.image_mean,
-			arch.image_std)
+			mean, std)
 
 		self.iou_threshold = iou_threshold
 		self.filter_threshold = filter_threshold

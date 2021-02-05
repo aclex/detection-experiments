@@ -10,7 +10,7 @@ class Pipeline(GetAug):
 	def __init__(self, size, mean, std, bbox_format='albumentations'):
 		super(Pipeline, self).__init__([
 			A.Resize(size[1], size[0]),
-			A.Normalize(),
+			A.Normalize(mean=mean, std=std),
 			ToTensor()
 		], bbox_format)
 

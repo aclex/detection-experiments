@@ -17,7 +17,7 @@ class Pipeline(GetAug):
 			A.Cutout(p=0.5),
 			A.RandomSizedBBoxSafeCrop(size[1], size[0], p=0.8),
 			A.Resize(size[1], size[0]),
-			A.Normalize(),
+			A.Normalize(mean=mean, std=std),
 			BboxFormatConvert(bbox_format, 'albumentations'),
 			ToTensor()
 		], bbox_format)

@@ -11,6 +11,8 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, MultiStepLR
 from detector.ssd.utils.misc import Timer
 
 from dataset.loader import load as load_dataset
+from dataset.loader import bbox_format as dataset_bbox_format
+from dataset.stat import mean_std
 
 from transform.collate import collate
 
@@ -182,22 +184,31 @@ def main():
 
 	arch = get_arch(args.net_config)
 
-	if args.dataset_style == 'pascal-voc':
-		bbox_format = 'pascal_voc'
-	elif args.dataset_style == 'coco':
-		bbox_format = 'coco'
-	else:
-		print("Dataset style %s is not supported" % args.dataset_style)
-		sys.exit(-1)
+	bbox_format = dataset_bbox_format(args.dataset_style)
+
+	train_mean, train_std = mean_std(
+		args.dataset_style,
+		args.dataset,
+		args.train_image_set)
 
 	train_transform = processing.train.Pipeline(
 		[arch.image_size] * 2,
-		arch.image_mean, arch.image_std,
+		train_mean, train_std,
 		bbox_format=bbox_format)
 
-	test_transform = processing.test.Pipeline(
+	if args.val_dataset is not None:
+		val_dataset_root = args.val_dataset
+	else:
+		val_dataset_root = args.dataset
+
+	val_mean, val_std = mean_std(
+		args.dataset_style,
+		val_dataset_root,
+		args.val_image_set)
+
+	val_transform = processing.test.Pipeline(
 		[arch.image_size] * 2,
-		arch.image_mean, arch.image_std,
+		val_mean, val_std,
 		bbox_format=bbox_format)
 
 	logging.info("Loading datasets...")
@@ -221,16 +232,11 @@ def main():
 		num_workers=args.num_workers,
 		shuffle=True, drop_last=drop_last)
 
-	if args.val_dataset is not None:
-		val_dataset_root = args.val_dataset
-	else:
-		val_dataset_root = args.dataset
-
 	val_dataset = load_dataset(
 			args.dataset_style,
 			val_dataset_root,
 			args.val_image_set,
-			test_transform)
+			val_transform)
 
 	logging.info("Validation dataset size: {}".format(len(val_dataset)))
 

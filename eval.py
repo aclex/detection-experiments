@@ -11,7 +11,8 @@ from arch.bootstrap import get_arch
 
 from predict.predictor import Predictor
 
-from dataset.loader import load as load_dataset
+from dataset.loader import bbox_format, load as load_dataset
+from dataset.stat import mean_std
 
 from storage.util import load
 
@@ -77,7 +78,9 @@ def main():
 		      "No chance to get valid results, so I give up.")
 		sys.exit(-1)
 
-	predictor = Predictor(arch, model, device=device)
+	mean, std = mean_std(args.dataset_style, args.dataset, args.image_set)
+
+	predictor = Predictor(arch, model, device=device, mean=mean, std=std)
 
 	if args.metric == 'pascal-voc':
 		logging.info("Calculating Pascal VOC metric...")
