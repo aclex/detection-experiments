@@ -73,7 +73,7 @@ def test_unmap_level(
 
 	reg, cls = pred_targets
 
-	mask = prefilter_mask(cls, 0.1)
+	mask = prefilter_mask(cls, 0.38)
 
 	reg = reg[mask]
 	cls = cls[mask]

@@ -4,7 +4,7 @@ import torch
 class LevelMapOperations:
 	@staticmethod
 	def _create_level_reg_maps(stride, image_size):
-		r = torch.arange(0, image_size, stride)
+		r = torch.arange(0., 1., float(stride) / image_size)
 
 		my, mx = torch.meshgrid(r, r)
 

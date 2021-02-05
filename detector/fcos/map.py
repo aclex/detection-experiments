@@ -129,7 +129,6 @@ class Mapper(nn.Module, LevelMapOperations):
 	@staticmethod
 	def _calc_reg_slab(stride, subparts):
 		result = torch.cat(subparts, dim=-1)
-		result /= stride
 
 		return result
 
@@ -155,7 +154,8 @@ class Mapper(nn.Module, LevelMapOperations):
 		return mn.unsqueeze(-1) >= 0
 
 	def _pointwise_fit_in_level(self, level_map, level):
-		th = self.level_thresholds[level]
+		s = self.strides[level]
+		th = torch.tensor(self.level_thresholds[level]) * s / self.image_size
 
 		mx, _ = level_map.max(dim=2)
 
@@ -208,10 +208,12 @@ class Mapper(nn.Module, LevelMapOperations):
 					zip(gt_boxes, gt_labels),
 					key=lambda v: Mapper._calc_area(v[0]),
 					reverse=True):
-				l = mx - box[0]
-				t = my - box[1]
-				r = box[2] - mx
-				b = box[3] - my
+				norm_box = box / self.image_size
+
+				l = mx - norm_box[0]
+				t = my - norm_box[1]
+				r = norm_box[2] - mx
+				b = norm_box[3] - my
 
 				reg_slab = self._calc_reg_slab(s, [l, t, r, b])
 				centerness_slab = self._calc_centerness_slab(l, t, r, b)

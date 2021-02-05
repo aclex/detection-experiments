@@ -14,7 +14,7 @@ def loss(strides, image_size):
 
 @pytest.fixture
 def expected():
-	return torch.tensor([0.8143])
+	return torch.tensor([88.8007])
 
 
 def test_sanity(loss, output_sample, expected):

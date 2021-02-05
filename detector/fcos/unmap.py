@@ -66,13 +66,10 @@ class Unmapper(nn.Module, LevelMapOperations):
 	def _unmap_level(self, level, maps):
 		s = self.strides[level]
 
-		level_map_size = self.image_size // s
-
 		maps = maps.permute(0, 2, 3, 1)
 		sp = self.split_joint_tensor(maps, self.num_classes)
 		reg_level_map, centerness_level_map, cls_level_map = sp
 
-		reg_level_map = reg_level_map * s
 		centerness_level_map = centerness_level_map.sigmoid()
 		cls_level_map = cls_level_map.sigmoid()
 
@@ -81,6 +78,7 @@ class Unmapper(nn.Module, LevelMapOperations):
 			centered_cls_level_map, torch.zeros_like(centered_cls_level_map))
 
 		reg_level_map = self._unmap_reg_level(level, reg_level_map)
+		reg_level_map = reg_level_map * self.image_size
 
 		reg = reg_level_map.reshape(self.batch_size, -1, 4)
 		reg /= self.image_size # convert to relative coordinates

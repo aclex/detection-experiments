@@ -46,7 +46,7 @@ def targets(sample):
 
 
 @pytest.fixture
-def expected_joint_map_8x8():
+def expected_joint_map_8x8(image_size):
 	l = torch.tensor([
 		[0] * 8,
 		[0] * 8,
@@ -92,9 +92,19 @@ def expected_joint_map_8x8():
 	]).unsqueeze(dim=-1)
 
 	reg = torch.cat([l, t, r, b], dim=-1)
-	reg /= 32
+	reg /= image_size
 
-	bg = torch.zeros([8, 8, 1])
+	bg = torch.tensor([
+		[1.] * 8,
+		[1.] + [0.] * 6 + [1.],
+		[1.] + [0.] * 7,
+		[1.] + [0.] * 7,
+		[1.] + [0.] * 6 + [1.],
+		[1.] + [0.] * 6 + [1.],
+		[1.] + [0.] * 7,
+		[1.] * 6 + [0.] * 2
+	]).unsqueeze(dim=-1)
+
 	fg1 = torch.tensor([
 		[0.] * 8,
 		[0.] * 8,
