@@ -165,6 +165,13 @@ class Mapper(nn.Module, LevelMapOperations):
 		return self._filter_background(level_map) & \
 			self._pointwise_fit_in_level(level_map, level)
 
+	def _clear_box_background(self, cls_level_map, reg_level_map):
+		fg = self._filter_background(reg_level_map)
+		fg = fg.expand_as(cls_level_map).clone()
+		fg[..., 1:] = False
+
+		cls_level_map[fg] = 0.
+
 	def _map_sample(self, gt_boxes, gt_labels):
 		result = []
 
@@ -211,6 +218,8 @@ class Mapper(nn.Module, LevelMapOperations):
 				cls_slab = self._calc_class_slab(s, label)
 
 				pred = self._mask(reg_slab, level)
+
+				self._clear_box_background(cls_level_map, reg_slab)
 
 				cls_level_map = torch.where(pred, cls_slab, cls_level_map)
 				reg_level_map = torch.where(pred, reg_slab, reg_level_map)
