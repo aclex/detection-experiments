@@ -15,3 +15,11 @@ def load(style, path, image_set, transform=None):
 	else:
 		raise RuntimeError("Dataset style %s is not supported" % style)
 
+def bbox_format(style):
+	if style == 'pascal-voc':
+		return 'pascal_voc'
+	elif style == 'coco':
+		return 'coco'
+	else:
+		raise RuntimeError("Dataset style %s is not supported" % style)
+
