@@ -3,3 +3,4 @@ torchvision>=0.7.0
 albumentations>=0.4.5
 pycocotools
 tqdm
+timm
