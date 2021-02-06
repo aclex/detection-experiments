@@ -1,6 +1,7 @@
 import sys
 import os
 import argparse
+import logging
 
 from collections import namedtuple
 
@@ -15,7 +16,6 @@ except ImportError:
 
 from detector.ssd.utils.misc import Timer
 
-from arch.bootstrap import get_arch
 from arch.core_settings import CoreSettings
 from predict.predictor import Predictor
 
