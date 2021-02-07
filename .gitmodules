@@ -2,9 +2,6 @@
 	path = backbone/outlet/mobilenetv3
 	url = https://github.com/xiaolai-sqlai/mobilenetv3
 	ignore = dirty
-[submodule "backbone/outlet/pytorch_image_models"]
-	path = backbone/outlet/pytorch_image_models
-	url = https://github.com/rwightman/pytorch-image-models
 [submodule "optim"]
 	path = optim
 	url = https://github.com/lessw2020/Best-Deep-Learning-Optimizers.git

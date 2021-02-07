@@ -2,7 +2,7 @@ import functools
 
 import torch
 
-import backbone.outlet.pytorch_image_models.timm as outlet
+import timm as outlet
 
 
 def feature_strides():
