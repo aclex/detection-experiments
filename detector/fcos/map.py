@@ -60,6 +60,8 @@ class Mapper(nn.Module, LevelMapOperations):
 		for i in range(len(strides) - 1, -1, -1):
 			s = strides[i]
 
+			pixel_size = float(s) / image_size
+
 			th_max = math.ceil(last_size / s)
 
 			if th_max % 2:
@@ -72,7 +74,7 @@ class Mapper(nn.Module, LevelMapOperations):
 			if i == 0:
 				th_min = 1
 
-			result.append((th_min, th_max))
+			result.append((th_min * pixel_size, th_max * pixel_size))
 
 		return tuple(result[::-1])
 
@@ -154,8 +156,7 @@ class Mapper(nn.Module, LevelMapOperations):
 		return mn.unsqueeze(-1) >= 0
 
 	def _pointwise_fit_in_level(self, level_map, level):
-		s = self.strides[level]
-		th = torch.tensor(self.level_thresholds[level]) * s / self.image_size
+		th = self.level_thresholds[level]
 
 		mx, _ = level_map.max(dim=2)
 
