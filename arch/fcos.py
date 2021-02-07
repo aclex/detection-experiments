@@ -1,8 +1,6 @@
 import os
 import json
 
-import arch.default_settings
-
 from detector.fcos.model import Blueprint, BlueprintInference
 from detector.fcos.map import Mapper
 from detector.fcos.loss import Loss

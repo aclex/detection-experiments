@@ -5,8 +5,6 @@ import torch
 
 from torch import nn
 
-import arch.default_settings
-
 import detector.ssd.config as config
 
 from detector.ssd import ssd
