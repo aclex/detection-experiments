@@ -1,12 +1,10 @@
-import backbone.outlet.ghostnet.pytorch.ghostnet as outlet
-
-#  from backbone.outlet.mobilenetv3.mobilenetv3 import Block, hswish
+import backbone.outlet.ghostnet.ghostnet_pytorch.ghostnet as outlet
 
 from backbone.feature_hook import FeatureHook
 
 
 class GhostNet(outlet.GhostNet):
-	C4_BOTTLENECK_NO = 4
+	C3_BOTTLENECK_NO = 4
 	C4_BOTTLENECK_NO = 6
 	def __init__(self, **kwargs):
 		kwargs.pop('pretrained')
