@@ -45,3 +45,16 @@ class GhostNet(outlet.GhostNet):
 		return [8, 16, 32]
 
 
+class GhostNet075(GhostNet):
+	def __init__(self, **kwargs):
+		super().__init__(width=0.75, **kwargs)
+
+
+class GhostNet050(GhostNet):
+	def __init__(self, **kwargs):
+		super().__init__(width=0.50, **kwargs)
+
+
+class GhostNet025(GhostNet):
+	def __init__(self, **kwargs):
+		super().__init__(width=0.25, **kwargs)

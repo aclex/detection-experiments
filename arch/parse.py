@@ -1,7 +1,7 @@
 from torch import nn
 
 from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
-from backbone.ghostnet import GhostNet
+from backbone.ghostnet import GhostNet, GhostNet075, GhostNet050, GhostNet025
 
 from fpn.bifpn import BiFPN
 
@@ -17,6 +17,15 @@ def parse_backbone(name):
 
 	elif name == "ghostnet-1.0":
 		return GhostNet
+
+	elif name == "ghostnet-0.75":
+		return GhostNet075
+
+	elif name == "ghostnet-0.50":
+		return GhostNet050
+
+	elif name == "ghostnet-0.25":
+		return GhostNet025
 
 	else:
 		return None
