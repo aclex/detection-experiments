@@ -52,4 +52,9 @@ def parse_norm(name):
 
 
 def parse_act(name):
+	if name is None or name.casefold() == "relu":
 		return nn.ReLU
+	elif name.casefold() == "relu6":
+		return nn.ReLU6
+	elif name.casefold() == "leakyrelu":
+		return nn.LeakyReLU
