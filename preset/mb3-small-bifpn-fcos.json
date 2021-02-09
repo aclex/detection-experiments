@@ -1,6 +1,9 @@
 {
 	"arch" : "fcos",
-	"backbone" : "mobilenetv3-small",
+	"backbone" :
+	{
+		"arch" : "mobilenetv3-small"
+	},
 	"fpn" : "bifpn",
 	"image_size" : 256,
 	"loss" :

@@ -1,6 +1,10 @@
 {
 	"arch" : "fcos",
-	"backbone" : "ghostnet-0.75",
+	"backbone" :
+	{
+		"arch" : "ghostnet",
+		"width" : 0.75
+	},
 	"fpn" : "bifpn",
 	"image_size" : 256,
 	"loss" :
