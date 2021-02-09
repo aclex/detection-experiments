@@ -293,7 +293,8 @@ def main():
 	else:
 		logging.info("Uses Cosine annealing warm restarts scheduler.")
 		scheduler = CosineAnnealingWarmRestarts(
-			optimizer, T_0=args.t0, T_mult=args.t_mult, eta_min=1e-5)
+			optimizer, T_0=args.t0, T_mult=args.t_mult, eta_min=1e-5,
+			last_epoch=last_epoch)
 
 	os.makedirs(args.checkpoint_path, exist_ok=True)
 
