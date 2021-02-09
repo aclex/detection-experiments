@@ -21,7 +21,7 @@ from arch.bootstrap import get_arch
 import processing.train
 import processing.test
 
-from storage.util import save
+from storage.util import save, load
 
 from optim.Ranger.ranger import Ranger
 from optim.diffgrad.diffgrad import DiffGrad
@@ -164,6 +164,14 @@ def main():
 		'--checkpoint-path', default='output',
 		help='directory for saving checkpoint models')
 
+	parser.add_argument(
+		'--continue-training', '-p',
+		help='continue training session for the previously trained model at '
+		'the specified path')
+	parser.add_argument(
+		'--last-epoch', default=-1, type=int,
+		help='last epoch to continue training session at (default is -1)')
+
 
 	logging.basicConfig(
 		stream=sys.stdout, level=logging.INFO,
@@ -182,7 +190,12 @@ def main():
 
 	timer = Timer()
 
-	arch = get_arch(args.net_config)
+	if args.continue_training is not None:
+		logging.info("Loading network")
+		arch, net, class_names = load(
+			args.continue_training, device=device)
+	else:
+		arch = get_arch(args.net_config)
 
 	bbox_format = dataset_bbox_format(args.dataset_style)
 
@@ -245,22 +258,23 @@ def main():
 		num_workers=args.num_workers,
 		shuffle=False, drop_last=drop_last)
 
-	logging.info("Building network")
-	backbone_pretrained = args.backbone_pretrained is not None
-	net = arch.build(num_classes, backbone_pretrained, args.batch_size)
+	if args.continue_training is None:
+		logging.info("Building network")
+		backbone_pretrained = args.backbone_pretrained is not None
+		net = arch.build(num_classes, backbone_pretrained, args.batch_size)
 
-	if backbone_pretrained and args.backbone_weights is not None:
-		logging.info(f"Load backbone weights from {args.backbone_weights}")
-		timer.start("Loading backbone model")
-		net.load_backbone_weights(args.backbone_weights)
-		logging.info(f'Took {timer.end("Loading backbone model"):.2f}s.')
+		if backbone_pretrained and args.backbone_weights is not None:
+			logging.info(f"Load backbone weights from {args.backbone_weights}")
+			timer.start("Loading backbone model")
+			net.load_backbone_weights(args.backbone_weights)
+			logging.info(f'Took {timer.end("Loading backbone model"):.2f}s.')
 
 	if args.freeze_backbone:
 		net.freeze_backbone()
 
 	net.to(device)
 
-	last_epoch = -1
+	last_epoch = args.last_epoch
 
 	criterion = arch.loss(net, device)
 	mapper = arch.mapper(net, device)
@@ -282,7 +296,12 @@ def main():
 	else:
 		optim_class = Ranger
 
-	optimizer = optim_class(net.parameters(), **optim_kwargs)
+	if args.continue_training is None:
+		optim_params = net.parameters()
+	else:
+		optim_params = [{"params": net.parameters(), "initial_lr": args.lr}]
+
+	optimizer = optim_class(optim_params, **optim_kwargs)
 	logging.info(f"Optimizer parameters used: {optim_kwargs}")
 
 	if args.scheduler == 'multi-step':
@@ -292,14 +311,15 @@ def main():
 			optimizer, milestones=milestones, gamma=0.1, last_epoch=last_epoch)
 	else:
 		logging.info("Uses Cosine annealing warm restarts scheduler.")
+		# CosineAnnealingWarmRestarts has a bug with `last_epoch` != -1,
+		# so we don't set it
 		scheduler = CosineAnnealingWarmRestarts(
-			optimizer, T_0=args.t0, T_mult=args.t_mult, eta_min=1e-5,
-			last_epoch=last_epoch)
+			optimizer, T_0=args.t0, T_mult=args.t_mult, eta_min=1e-5)
 
 	os.makedirs(args.checkpoint_path, exist_ok=True)
 
 	logging.info(f"Start training from epoch {last_epoch + 1}.")
-	for epoch in range(last_epoch + 1, args.num_epochs):
+	for epoch in range(last_epoch + 1, last_epoch + args.num_epochs + 1):
 		loop(
 			train_loader, net, mapper, criterion,
 			optimizer, device=device, epoch=epoch)
