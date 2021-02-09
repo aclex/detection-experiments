@@ -26,7 +26,7 @@ def parse_backbone(settings):
 
 
 def parse_fpn_class(name):
-	if name == "bifpn":
+	if name.casefold() == "bifpn":
 		return BiFPN
 
 	else:
@@ -34,21 +34,22 @@ def parse_fpn_class(name):
 
 
 def parse_conv(name):
-	if name == "depthwise-separable" or \
-			name == "depthwise" or \
-			name == "separable":
-		return SeparableConv2d
-
-	else:
+	if name is None or name.casefold() == "conv":
 		return nn.Conv2d
+
+	elif name.casefold() == "depthwise-separable" or \
+			name.casefold() == "depthwise" or \
+			name.casefold() == "separable":
+		return SeparableConv2d
 
 
 def parse_norm(name):
-	if name == "group":
-		return nn.GroupNorm2d
-
-	else:
+	if name is None or name.casefold() == "batch" or \
+			name.casefold() == "batchnorm":
 		return nn.BatchNorm2d
+
+	if name.casefold() == "group" or name.casefold() == "groupnorm":
+		return nn.GroupNorm
 
 
 def parse_act(name):
