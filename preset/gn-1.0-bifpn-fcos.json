@@ -5,6 +5,7 @@
 		"arch" : "ghostnet"
 	},
 	"fpn" : "bifpn",
+	"norm" : "group",
 	"image_size" : 256,
 	"loss" :
 	{

@@ -5,6 +5,7 @@
 		"arch" : "mobilenetv3-large"
 	},
 	"fpn" : "bifpn",
+	"norm" : "group",
 	"image_size" : 256,
 	"loss" :
 	{
