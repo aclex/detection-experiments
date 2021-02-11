@@ -10,7 +10,7 @@ class Predictor:
 			self, arch, net,
 			nms_method=None, iou_threshold=0.45,
 			filter_threshold=0.01, candidate_size=200, sigma=0.5,
-			mean=(0.5, 0.5, 0.5), std=(1., 1., 1.),
+			mean=(0.3598, 0.3426, 0.3683), std=(0.2823, 0.2828, 0.2631),
 			device="cpu"):
 		self.net = net
 		self.transform = processing.predict.Pipeline(
