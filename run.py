@@ -37,12 +37,9 @@ class ONNXModel():
 
 	def arch(self):
 		arch_class = namedtuple(
-			'ONNXArch', ['image_size', 'image_mean', 'image_std'])
+			'ONNXArch', ['image_size'])
 
-		return arch_class(
-			self.image_size,
-			CoreSettings.DEFAULT_MEAN,
-			CoreSettings.DEFAULT_STD)
+		return arch_class(self.image_size)
 
 	def to(self, device=None):
 		pass
