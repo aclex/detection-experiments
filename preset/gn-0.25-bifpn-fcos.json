@@ -6,7 +6,6 @@
 		"width" : 0.25
 	},
 	"fpn" : "bifpn",
-	"conv" : "depthwise",
 	"norm" : "group",
 	"image_size" : 256,
 	"loss" :

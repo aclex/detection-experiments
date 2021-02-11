@@ -5,7 +5,6 @@
 		"arch" : "mobilenetv3-small"
 	},
 	"fpn" : "bifpn",
-	"conv" : "depthwise",
 	"norm" : "group",
 	"image_size" : 256,
 	"loss" :
