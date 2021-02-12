@@ -86,7 +86,7 @@ def loop(
 
 def main():
 	parser = argparse.ArgumentParser(
-		description='FCOS Detector Training With Pytorch')
+		description='Detection model training utility')
 
 	parser.add_argument(
 		'--dataset-style', type=str, required=True,
