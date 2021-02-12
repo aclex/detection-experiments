@@ -4,6 +4,7 @@ import argparse
 import logging
 
 from collections import namedtuple
+from ast import literal_eval
 
 import cv2
 
@@ -97,6 +98,15 @@ def main():
 	parser.add_argument('--device', type=str, help='device to use')
 	parser.add_argument('--output', '-o', type=str,
 	                    help="save the results to the specified file")
+	parser.add_argument(
+		'--mean', type=str, default="(0.485, 0.456, 0.406)",
+		help="Expected mean value for the image or video (ImageNet defaults "
+		"(0.485, 0.456, 0.406) are used if not specified)")
+	parser.add_argument(
+		'--std', type=str, default="(0.229, 0.224, 0.225)",
+		help="Expected standard deviation value for the image or video "
+		"(ImageNet defaults (0.229, 0.224, 0.225) are used if not "
+		"specified)")
 	parser.add_argument("path", type=str, nargs='?',
 	                    help="file to process (use camera if omitted and "
 	                    "'--video' is set")
@@ -114,6 +124,9 @@ def main():
 	if args.image and args.video:
 		print("Can process either image or video, but not both")
 		sys.exit(-1)
+
+	mean = literal_eval(args.mean)
+	std = literal_eval(args.std)
 
 	_, ext = os.path.splitext(args.model_path)
 
@@ -133,7 +146,7 @@ def main():
 		arch, model, class_names = load(
 			args.model_path, device=device, inference=True)
 
-	predictor = Predictor(arch, model, device=device)
+	predictor = Predictor(arch, model, device=device, mean=mean, std=std)
 
 	timer = Timer()
 
