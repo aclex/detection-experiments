@@ -73,16 +73,16 @@ class Unmapper(nn.Module, LevelMapOperations):
 		centerness_level_map = centerness_level_map.sigmoid()
 		cls_level_map = cls_level_map.sigmoid()
 
-		centered_cls_level_map = centerness_level_map * cls_level_map
-		centered_cls_level_map = torch.max(
-			centered_cls_level_map, torch.zeros_like(centered_cls_level_map))
+		confidence_level_map = cls_level_map
+		confidence_level_map = torch.max(
+			confidence_level_map, torch.zeros_like(confidence_level_map))
 
 		reg_level_map = self._unmap_reg_level(level, reg_level_map)
 		reg_level_map = reg_level_map * self.image_size
 
 		reg = reg_level_map.reshape(self.batch_size, -1, 4)
 		reg /= self.image_size # convert to relative coordinates
-		cls = centered_cls_level_map.reshape(
+		cls = confidence_level_map.reshape(
 			self.batch_size, -1, self.num_classes)
 
 		return reg, cls
