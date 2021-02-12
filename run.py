@@ -183,7 +183,6 @@ def main():
 			predict_and_show(orig_image, predictor, class_names, timer)
 
 			if out is not None:
-				print("writing to")
 				out.write(orig_image)
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
