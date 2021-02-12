@@ -58,17 +58,17 @@ class ONNXModel():
 def draw_predictions(frame, boxes, labels, scores, class_names):
 	for i in range(boxes.size(0)):
 		box = boxes[i, :]
-		cv2.rectangle(frame,
-		              (box[0], box[1]), (box[2], box[3]),
-		              (255, 255, 0), 4)
+		cv2.rectangle(
+			frame, (box[0], box[1]), (box[2], box[3]), (255, 255, 0), 4)
 
 		label = f"{class_names[labels[i]]}: {scores[i]:.2f}"
-		cv2.putText(frame, label,
-		            (box[0] + 20, box[1] + 40),
-		            cv2.FONT_HERSHEY_SIMPLEX,
-		            1,  # font scale
-		            (255, 0, 255),
-		            2)  # line type
+		cv2.putText(
+			frame, label,
+			(box[0] + 20, box[1] + 40),
+			cv2.FONT_HERSHEY_SIMPLEX,
+			1,  # font scale
+			(255, 0, 255),
+			2)  # line type
 
 
 def predict_and_show(orig_image, predictor, class_names, timer):
@@ -77,8 +77,8 @@ def predict_and_show(orig_image, predictor, class_names, timer):
 	timer.start("inference")
 	boxes, labels, probs = predictor.predict(image, 10, 0.4)
 	interval = timer.end("inference")
-	print(f'Inference time: {interval:.3f}s, '
-	      f'Detect Objects: {labels.size(0)}.')
+	print(
+		f'Inference time: {interval:.3f}s, {labels.size(0)} objects detected.')
 
 	draw_predictions(orig_image, boxes, labels, probs, class_names)
 
@@ -86,18 +86,22 @@ def predict_and_show(orig_image, predictor, class_names, timer):
 
 
 def main():
-	parser = argparse.ArgumentParser("Utility to process an image "
-	                                 "through the detection model")
+	parser = argparse.ArgumentParser(
+		"Utility to process an image through the detection model")
 
-	parser.add_argument("--model-path", '-p', type=str, required=True,
-	                    help="path to the trained model")
-	parser.add_argument("--image", '-i', action='store_true',
-	                    help="process on image")
-	parser.add_argument("--video", '-v', action='store_true',
-	                    help="process on video")
+	parser.add_argument(
+		"--model-path", '-p', type=str, required=True,
+		help="path to the trained model")
+	parser.add_argument(
+		"--image", '-i', action='store_true',
+		help="process on image")
+	parser.add_argument(
+		"--video", '-v', action='store_true',
+		help="process on video")
 	parser.add_argument('--device', type=str, help='device to use')
-	parser.add_argument('--output', '-o', type=str,
-	                    help="save the results to the specified file")
+	parser.add_argument(
+		'--output', '-o', type=str,
+		help="save the results to the specified file")
 	parser.add_argument(
 		'--mean', type=str, default="(0.485, 0.456, 0.406)",
 		help="Expected mean value for the image or video (ImageNet defaults "
@@ -107,9 +111,10 @@ def main():
 		help="Expected standard deviation value for the image or video "
 		"(ImageNet defaults (0.229, 0.224, 0.225) are used if not "
 		"specified)")
-	parser.add_argument("path", type=str, nargs='?',
-	                    help="file to process (use camera if omitted and "
-	                    "'--video' is set")
+	parser.add_argument(
+		"path", type=str, nargs='?',
+		help="file to process (use camera if omitted and "
+		"'--video' is set")
 
 	args = parser.parse_args()
 
@@ -171,8 +176,9 @@ def main():
 			frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 			frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 			fps = int(cap.get(cv2.CAP_PROP_FPS))
-			out = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*"mp4v"),
-			                      fps, (frame_width, frame_height))
+			out = cv2.VideoWriter(
+				args.output, cv2.VideoWriter_fourcc(*"mp4v"),
+				fps, (frame_width, frame_height))
 
 		while True:
 			ret, orig_image = cap.read()
