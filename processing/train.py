@@ -21,5 +21,3 @@ class Pipeline(GetAug):
 			BboxFormatConvert(bbox_format, 'albumentations'),
 			ToTensor()
 		], bbox_format)
-
-

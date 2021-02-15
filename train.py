@@ -4,6 +4,8 @@ import argparse
 import logging
 import itertools
 
+from ast import literal_eval
+
 import torch
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, MultiStepLR
@@ -20,6 +22,7 @@ from arch.bootstrap import get_arch
 
 import processing.train
 import processing.test
+import processing.randaugment
 
 from storage.util import save, load
 
@@ -171,6 +174,11 @@ def main():
 	parser.add_argument(
 		'--last-epoch', default=-1, type=int,
 		help='last epoch to continue training session at (default is -1)')
+	parser.add_argument(
+		'--rand-augment', default="", type=str,
+		help='use RandAugment augmentation pipeline for training instead of '
+		'conventional one with the specified `m` and `n` values '
+		'(e.g. "(9, 3)") ')
 
 
 	logging.basicConfig(
@@ -204,10 +212,20 @@ def main():
 		args.dataset,
 		args.train_image_set)
 
-	train_transform = processing.train.Pipeline(
-		[arch.image_size] * 2,
-		train_mean, train_std,
-		bbox_format=bbox_format)
+	if args.rand_augment == "":
+		logging.info("Using conventional augmentation pipeline")
+		train_transform = processing.train.Pipeline(
+			[arch.image_size] * 2,
+			train_mean, train_std,
+			bbox_format=bbox_format)
+	else:
+		m, n = literal_eval(args.rand_augment)
+		logging.info("Using RandAugment pipeline with m=%d, n=%d" % (m, n))
+		train_transform = processing.randaugment.Pipeline(
+			m, n,
+			[arch.image_size] * 2,
+			train_mean, train_std,
+			bbox_format=bbox_format)
 
 	if args.val_dataset is not None:
 		val_dataset_root = args.val_dataset
