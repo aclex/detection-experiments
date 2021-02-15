@@ -1,0 +1,20 @@
+{
+	"arch" : "fcos",
+	"backbone" :
+	{
+		"arch" : "tinynet",
+		"edition" : "b"
+	},
+	"fpn" : "bifpn",
+	"norm" : "group",
+	"image_size" : 256,
+	"loss" :
+	{
+		"weights" :
+		{
+			"cls" : 1.0,
+			"reg" : 1.0,
+			"centerness" : 1.0
+		}
+	}
+}

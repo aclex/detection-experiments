@@ -3,6 +3,7 @@ from torch import nn
 
 from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
 from backbone.ghostnet import GhostNet
+from backbone.tinynet import TinyNet
 
 from fpn.bifpn import BiFPN
 
@@ -20,6 +21,10 @@ def parse_backbone(settings):
 	elif arch.casefold() == "ghostnet":
 		width = settings.get("width", 1.0)
 		return partial(GhostNet, width=width)
+
+	elif arch.casefold() == "tinynet":
+		edition = settings.get("edition", 'a')
+		return partial(TinyNet, edition=edition)
 
 	else:
 		return None
