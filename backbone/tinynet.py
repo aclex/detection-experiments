@@ -1,3 +1,5 @@
+from torch import nn
+
 from timm.models.efficientnet_builder import *
 from timm.models.efficientnet import EfficientNetFeatures, _cfg
 
@@ -32,7 +34,7 @@ def TinyNet(edition, **kwargs):
 		stem_size=32,
 		fix_stem=True,
 		channel_multiplier=w,
-		act_layer=Swish,
+		act_layer=nn.ReLU,
 		norm_kwargs=resolve_bn_args(kwargs),
 		out_indices=(2, 3, 4),
 		feature_location="bottleneck",
