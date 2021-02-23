@@ -87,7 +87,7 @@ class Mapper(nn.Module, LevelMapOperations):
 		size = image_size // stride
 		return torch.full((size, size, num_cell_elements), value)
 
-	def _create_empty_maps(self, device, dtype):
+	def _create_empty_maps(self, device, dtype, with_centerness=True):
 		result = []
 
 		for level in range(self.num_levels):
@@ -102,11 +102,21 @@ class Mapper(nn.Module, LevelMapOperations):
 				s, self.image_size, num_cell_elements=4)
 			reg_level_map = reg_level_map.to(device=device, dtype=dtype)
 
-			centerness_level_map = self._create_level_map(s, self.image_size)
-			centerness_level_map = centerness_level_map.to(
-				device=device, dtype=dtype)
+			if with_centerness:
+				centerness_level_map = self._create_level_map(
+					s, self.image_size)
+				centerness_level_map = centerness_level_map.to(
+					device=device, dtype=dtype)
 
-			result.append((reg_level_map, centerness_level_map, cls_level_map))
+				result.append((
+					reg_level_map,
+					centerness_level_map,
+					cls_level_map))
+
+			else:
+				result.append((
+					reg_level_map,
+					cls_level_map))
 
 		return tuple(result)
 

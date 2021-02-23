@@ -50,12 +50,14 @@ class BlueprintInference(Blueprint):
 			num_levels=Head.DEFAULT_NUM_LEVELS,
 			num_fpn_layers=None,
 			num_blocks=Head.DEFAULT_NUM_BLOCKS,
-			head=Head,
+			head=Head, unmapper=Unmapper,
 			fpn=BiFPN, conv=nn.Conv2d, norm=nn.BatchNorm2d, act=nn.ReLU):
 		super(BlueprintInference, self).__init__(
 			arch_name, backbone, num_classes,
 			num_channels, num_levels, num_fpn_layers, num_blocks,
 			head, fpn, conv, norm, act)
+
+		self.unmapper_class = unmapper
 
 		self.batch_size = batch_size
 		self._unmapper = None
@@ -64,7 +66,7 @@ class BlueprintInference(Blueprint):
 		output = super(BlueprintInference, self).forward(x)
 
 		if self._unmapper is None:
-			self._unmapper = Unmapper(
+			self._unmapper = self.unmapper_class(
 				strides=self.strides, image_size=x.size(-1),
 				num_classes=self.head.num_classes,
 				batch_size=self.batch_size or x.size(0),

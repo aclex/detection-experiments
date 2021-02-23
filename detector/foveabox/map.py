@@ -6,8 +6,6 @@ from torch import nn
 
 from detector.fcos import map as fcos_map
 
-from ..fcos.level_map_operations import LevelMapOperations
-
 
 class Mapper(fcos_map.Mapper):
 	def __init__(
@@ -85,7 +83,8 @@ class Mapper(fcos_map.Mapper):
 						"positive target")
 
 				self._empty_maps = self._create_empty_maps(
-					gt_boxes[0].device, gt_boxes[0].dtype)
+					gt_boxes[0].device, gt_boxes[0].dtype,
+					with_centerness=False)
 				self._grid_maps = self._create_grid_maps(
 					gt_boxes[0].device, gt_boxes[0].dtype)
 
