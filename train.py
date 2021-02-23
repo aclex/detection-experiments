@@ -343,8 +343,8 @@ def main():
 			optimizer, device=device, epoch=epoch)
 		scheduler.step()
 
-		if (epoch > 0 and epoch % args.val_epochs == 0 or
-				epoch == args.num_epochs - 1):
+		if ((epoch + 1) % args.val_epochs == 0 or
+				(epoch + 1) == args.num_epochs):
 			val_loss = loop(
 				val_loader, net, mapper, criterion,
 				device=device, epoch=epoch)
