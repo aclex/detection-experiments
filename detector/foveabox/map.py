@@ -16,25 +16,6 @@ class Mapper(fcos_map.Mapper):
 
 		self.sigma = sigma
 
-	def _create_empty_maps(self, device, dtype):
-		result = []
-
-		for level in range(self.num_levels):
-			s = self.strides[level]
-
-			cls_level_map = self._create_level_map(
-				s, self.image_size, num_cell_elements=self.num_classes)
-			cls_level_map[..., 0] = 1. # set all pixels to 'background' class
-			cls_level_map = cls_level_map.to(device=device, dtype=dtype)
-
-			reg_level_map = self._create_level_map(
-				s, self.image_size, num_cell_elements=4)
-			reg_level_map = reg_level_map.to(device=device, dtype=dtype)
-
-			result.append((reg_level_map, cls_level_map))
-
-		return tuple(result)
-
 	def _is_visible(self, box, level):
 		s = self.strides[level]
 
@@ -47,24 +28,15 @@ class Mapper(fcos_map.Mapper):
 
 		return (norm_area > th[0] * th[0]) & (norm_area <= th[1] * th[1])
 
-	def _fovea(self, box, level):
-		s = self.strides[level]
-		mx, my = self._grid_maps[level]
+	def _calc_fovea_slab(self, box, level_map):
+		width = box[2] - box[0]
+		height = box[3] - box[1]
 
-		norm_box = box / self.image_size
+		result = level_map.detach()
+		result[..., (0, 2)] -= (1 - self.sigma) / 2. * width
+		result[..., (1, 3)] -= (1 - self.sigma) / 2. * height
 
-		norm_width = norm_box[2] - norm_box[0]
-		norm_height = norm_box[3] - norm_box[1]
-
-		l = mx - (norm_box[0] + (1 - self.sigma) / 2. * norm_width)
-		t = my - (norm_box[1] + (1 - self.sigma) / 2. * norm_height)
-		r = norm_box[2] - (1 - self.sigma) / 2. * norm_width - mx
-		b = norm_box[3] - (1 - self.sigma) / 2. * norm_height - my
-
-		fovea_slab = self._calc_reg_slab(s, [l, t, r, b])
-		mn, _ = fovea_slab.min(dim=2)
-
-		return mn.unsqueeze(-1) >= 0
+		return result
 
 	def _map_sample(self, gt_boxes, gt_labels):
 		result = []
@@ -114,14 +86,15 @@ class Mapper(fcos_map.Mapper):
 				b = norm_box[3] - my
 
 				reg_slab = self._calc_reg_slab(s, [l, t, r, b])
+				fovea_slab = self._calc_fovea_slab(norm_box, reg_slab)
 				cls_slab = self._calc_class_slab(s, label)
 
 				reg_pred = self._filter_background(reg_slab)
-				fovea = self._fovea(box, level)
+				cls_pred = self._filter_background(fovea_slab)
 
 				self._clear_box_background(cls_level_map, reg_slab)
 
-				cls_level_map = torch.where(fovea, cls_slab, cls_level_map)
+				cls_level_map = torch.where(cls_pred, cls_slab, cls_level_map)
 				reg_level_map = torch.where(reg_pred, reg_slab, reg_level_map)
 
 			level_map = torch.cat([reg_level_map, cls_level_map], dim=-1)
