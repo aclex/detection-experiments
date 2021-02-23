@@ -17,5 +17,5 @@ class LevelMapOperations:
 	def split_joint_tensor(x, num_classes, with_centerness=True):
 		if with_centerness:
 			return torch.split(x, [4, 1, num_classes], dim=-1)
-		else
+		else:
 			return torch.split(x, [4, num_classes], dim=-1)
