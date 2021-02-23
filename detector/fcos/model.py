@@ -17,6 +17,7 @@ class Blueprint(Model):
 			num_levels=Head.DEFAULT_NUM_LEVELS,
 			num_fpn_layers=None,
 			num_blocks=Head.DEFAULT_NUM_BLOCKS,
+			head=Head,
 			fpn=BiFPN, conv=nn.Conv2d, norm=nn.BatchNorm2d, act=nn.ReLU):
 
 		self.arch_name = arch_name
@@ -32,7 +33,7 @@ class Blueprint(Model):
 				conv=conv, norm=norm, act=act)
 
 		def head_builder(strides):
-			return Head(
+			return head(
 				num_classes=num_classes, strides=strides,
 				conv=conv, act=act,
 				num_channels=num_channels, num_blocks=num_blocks)
@@ -49,11 +50,12 @@ class BlueprintInference(Blueprint):
 			num_levels=Head.DEFAULT_NUM_LEVELS,
 			num_fpn_layers=None,
 			num_blocks=Head.DEFAULT_NUM_BLOCKS,
+			head=Head,
 			fpn=BiFPN, conv=nn.Conv2d, norm=nn.BatchNorm2d, act=nn.ReLU):
 		super(BlueprintInference, self).__init__(
 			arch_name, backbone, num_classes,
 			num_channels, num_levels, num_fpn_layers, num_blocks,
-			fpn, conv, norm, act)
+			head, fpn, conv, norm, act)
 
 		self.batch_size = batch_size
 		self._unmapper = None
