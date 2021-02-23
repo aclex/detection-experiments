@@ -37,13 +37,13 @@ def expected_labels(expected_class):
 @pytest.fixture
 def expected_box1(image_size):
 	return torch.tensor(
-		[5., 11., 200., 210.], dtype=torch.float32) / image_size
+		[5., 11., 200., 210.], dtype=torch.float32)
 
 
 @pytest.fixture
 def expected_box2(image_size):
 	return torch.tensor(
-		[149., 40., 227., 121.], dtype=torch.float32) / image_size
+		[149., 40., 227., 121.], dtype=torch.float32)
 
 
 @pytest.fixture
@@ -61,25 +61,27 @@ def expected_reg(expected_box1, expected_box2):
 
 
 def prefilter_mask(m, threshold):
-	mx, _ = m.max(dim=-1)
+	mx, _ = m[..., 1:].max(dim=-1)
 	return mx >= threshold
 
 
 def test_unmap_level(
 		unmapper, expected_joint_map_8x8,
-		expected_labels, expected_reg):
+		expected_labels, expected_reg, image_size):
 	pred_targets = unmapper._unmap_level(2, expected_joint_map_8x8.unsqueeze(
 		dim=0))
 
 	reg, cls = pred_targets
 
-	mask = prefilter_mask(cls, 0.38)
+	mask = prefilter_mask(cls, 0.6)
 
 	reg = reg[mask]
 	cls = cls[mask]
 
 	cls = cls.squeeze(dim=0)
 	reg = reg.squeeze(dim=0)
+
+	reg *= image_size
 
 	labels = torch.argmax(cls, dim=-1)
 
