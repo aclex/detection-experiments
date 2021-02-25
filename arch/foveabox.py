@@ -32,6 +32,7 @@ class FoveaBox(CoreSettings):
 
 		self.pheta = CompoundScaling.pheta(self.image_size)
 		self.sigma = self.settings.get("sigma", 0.4)
+		self.atss_k = self.settings.get("atss", {}).get("k", None)
 
 	def build(
 			self, num_classes, pretrained_backbone=False,
@@ -54,4 +55,4 @@ class FoveaBox(CoreSettings):
 	def mapper(self, net, device=None):
 		return Mapper(
 			net.strides, self.image_size, net.head.num_classes,
-			sigma=self.sigma)
+			sigma=self.sigma, atss_k=self.atss_k)

@@ -10,11 +10,12 @@ from detector.fcos import map as fcos_map
 class Mapper(fcos_map.Mapper):
 	def __init__(
 			self, strides, image_size, num_classes,
-			sigma,
+			sigma, atss_k=None,
 			device=None, dtype=None):
 		super().__init__(strides, image_size, num_classes, device, dtype)
 
 		self.sigma = sigma
+		self.atss_k = atss_k
 
 	@staticmethod
 	def _calc_level_thresholds(strides, image_size):
@@ -51,11 +52,24 @@ class Mapper(fcos_map.Mapper):
 
 		return (norm_area > th[0] * th[0]) & (norm_area <= th[1] * th[1])
 
+	def _calc_atss_slab(self, level_map):
+		r = torch.tensor(level_map)
+
+		r = torch.abs(r[..., 0] - r[..., 2]) + torch.abs(r[..., 1] - r[..., 3])
+		r.unsqueeze_(-1)
+		fr = r.flatten()
+
+		_, indices = fr.topk(self.atss_k, largest=False)
+
+		result = fr.scatter(-1, indices, 1.).reshape_as(r)
+
+		return result
+
 	def _calc_fovea_slab(self, box, level_map):
 		width = box[2] - box[0]
 		height = box[3] - box[1]
 
-		result = level_map.detach()
+		result = torch.tensor(level_map)
 		result[..., (0, 2)] -= (1 - self.sigma) / 2. * width
 		result[..., (1, 3)] -= (1 - self.sigma) / 2. * height
 
@@ -109,7 +123,12 @@ class Mapper(fcos_map.Mapper):
 				b = norm_box[3] - my
 
 				reg_slab = self._calc_reg_slab(s, [l, t, r, b])
-				fovea_slab = self._calc_fovea_slab(norm_box, reg_slab)
+
+				if self.atss_k is not None:
+					fovea_slab = self._calc_atss_slab(reg_slab)
+				else:
+					fovea_slab = self._calc_fovea_slab(norm_box, reg_slab)
+
 				cls_slab = self._calc_class_slab(s, label)
 
 				reg_pred = self._filter_background(reg_slab)
