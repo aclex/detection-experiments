@@ -3,6 +3,7 @@ import torch
 from torch import nn
 
 from nn.conv_tower import Tower
+from nn.scale import Scale
 
 
 class Head(nn.Module):
@@ -32,19 +33,33 @@ class Head(nn.Module):
 			num_channels, 4,
 			kernel_size=3, stride=1, padding=1)
 
+		self.cls_scales = nn.ModuleList(
+			[nn.Sequential(
+				Scale(init_value=1.0),
+				act()) for _ in range(self.num_levels)])
+
+		self.reg_scales = nn.ModuleList(
+			[nn.Sequential(
+				Scale(init_value=1.0),
+				act()) for _ in range(self.num_levels)])
+
 	def forward(self, x):
 		assert len(x) == self.num_levels
 
 		result = []
 
-		for l, xl in enumerate(x):
+		for l, (xl, cls_scale, reg_scale) in enumerate(
+				zip(x, self.cls_scales, self.reg_scales)):
 			cls_tower_out = self.cls_tower.forward(xl)
 			reg_tower_out = self.reg_tower.forward(xl)
 
 			cls_out = self.cls.forward(cls_tower_out)
 			reg_out = self.reg.forward(reg_tower_out)
 
-			joint_level_out = torch.cat([reg_out, cls_out], dim=1)
+			cls_scales_out = cls_scale.forward(cls_out)
+			reg_scales_out = reg_scale.forward(reg_out)
+
+			joint_level_out = torch.cat([reg_scales_out, cls_scales_out], dim=1)
 
 			result.append(joint_level_out)
 
