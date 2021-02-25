@@ -16,6 +16,29 @@ class Mapper(fcos_map.Mapper):
 
 		self.sigma = sigma
 
+	@staticmethod
+	def _calc_level_thresholds(strides, image_size):
+		result = []
+
+		last_size = image_size
+		for i in range(len(strides) - 1, -1, -1):
+			s = strides[i]
+
+			pixel_size = float(s) / image_size
+
+			th_max = math.ceil(last_size / s)
+
+			if th_max % 2:
+				th_max += 1
+
+			th_min = 1
+
+			last_size = (th_max // 2) * s
+
+			result.append((th_min * pixel_size, th_max * pixel_size))
+
+		return tuple(result[::-1])
+
 	def _is_visible(self, box, level):
 		s = self.strides[level]
 
