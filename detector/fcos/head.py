@@ -4,8 +4,7 @@ import torch
 from torch import nn
 
 from nn.conv_tower import Tower
-
-from .scale import Scale
+from nn.scale import Scale
 
 
 class Head(nn.Module):
