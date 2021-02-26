@@ -178,7 +178,7 @@ class Mapper(nn.Module, LevelMapOperations):
 
 	def _clear_box_background(self, cls_level_map, reg_level_map):
 		fg = self._filter_background(reg_level_map)
-		fg = fg.expand_as(cls_level_map).clone()
+		fg = fg.expand_as(cls_level_map).clone().detach()
 		fg[..., 1:] = False
 
 		cls_level_map[fg] = 0.

@@ -53,15 +53,23 @@ class Mapper(fcos_map.Mapper):
 		return (norm_area > th[0] * th[0]) & (norm_area <= th[1] * th[1])
 
 	def _calc_atss_slab(self, level_map):
-		r = torch.tensor(level_map)
+		r = level_map.clone().detach()
+		mn, _ = r.min(dim=-1)
+
+		mask = mn >= 0
+		k = min(torch.nonzero(mask).numel(), self.atss_k)
 
 		r = torch.abs(r[..., 0] - r[..., 2]) + torch.abs(r[..., 1] - r[..., 3])
+		neutral_value = torch.tensor([1], dtype=torch.float32)
+		r = torch.where(mask, r, neutral_value)
 		r.unsqueeze_(-1)
 		fr = r.flatten()
 
-		_, indices = fr.topk(self.atss_k, largest=False)
+		_, indices = fr.topk(k, largest=False)
 
-		result = fr.scatter(-1, indices, 1.).reshape_as(r)
+		z = torch.zeros_like(fr)
+		result = z.scatter(-1, indices, 2).reshape_as(r)
+		result -= 1
 
 		return result
 
@@ -69,7 +77,7 @@ class Mapper(fcos_map.Mapper):
 		width = box[2] - box[0]
 		height = box[3] - box[1]
 
-		result = torch.tensor(level_map)
+		result = level_map.clone().detach()
 		result[..., (0, 2)] -= (1 - self.sigma) / 2. * width
 		result[..., (1, 3)] -= (1 - self.sigma) / 2. * height
 
