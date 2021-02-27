@@ -39,7 +39,7 @@ class Loss(nn.Module):
 
 		"""
 		reg_pred, cls_pred = self._flatten(x)
-		reg_target, cls_target = self._flatten(y)
+		reg_target, cls_target = self._flatten(y, detach=True)
 
 		mask = self._mask(reg_target, cls_target)
 
@@ -76,7 +76,7 @@ class Loss(nn.Module):
 	def _apply_mask(reg, cls, mask):
 		return reg[mask], cls
 
-	def _flatten(self, level_maps):
+	def _flatten(self, level_maps, detach=False):
 		reg_levels = []
 		cls_levels = []
 
@@ -87,6 +87,10 @@ class Loss(nn.Module):
 			sp = LevelMapOperations.split_joint_tensor(
 				joint_map, self.num_classes, with_centerness=False)
 			reg_level_map, cls_level_map = sp
+
+			if detach:
+				reg_level_map = reg_level_map.detach()
+				cls_level_map = cls_level_map.detach()
 
 			# [l, r, t, b] -> [x1, y1, x2, y2]
 			reg_level_map = self._unmapper._unmap_reg_level(l, reg_level_map)
