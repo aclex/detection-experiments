@@ -45,7 +45,7 @@ def elementwise_ciou(
 	ro = (p[..., 0] - p_gt[..., 0]) ** 2 + (p[..., 1] - p_gt[..., 1]) ** 2
 	c2 = c_wh[..., 0] ** 2 + c_wh[..., 1] ** 2
 
-	D = ro / c2
+	D = ro / _num_stab(c2, eps)
 
 	wh = boxes1[..., 2:] - boxes1[..., :2]
 	wh_gt = boxes2[..., 2:] - boxes2[..., :2]
