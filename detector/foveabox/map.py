@@ -53,23 +53,27 @@ class Mapper(fcos_map.Mapper):
 		return (norm_area > th[0] * th[0]) & (norm_area <= th[1] * th[1])
 
 	def _calc_atss_slab(self, level_map):
-		r = level_map.clone().detach()
-		mn, _ = r.min(dim=-1)
+		atss_map = level_map.clone().detach()
 
-		mask = mn >= 0
-		k = min(torch.nonzero(mask).numel(), self.atss_k)
+		l = atss_map[..., 0]
+		t = atss_map[..., 1]
+		r = atss_map[..., 2]
+		b = atss_map[..., 3]
+		fg = self._filter_background(atss_map).squeeze(-1)
 
-		r = torch.abs(r[..., 0] - r[..., 2]) + torch.abs(r[..., 1] - r[..., 3])
-		neutral_value = torch.tensor([1], dtype=torch.float32)
-		r = torch.where(mask, r, neutral_value)
-		r.unsqueeze_(-1)
-		fr = r.flatten()
+		k = min(torch.nonzero(fg).numel(), self.atss_k)
 
-		_, indices = fr.topk(k, largest=False)
+		atss_map = torch.abs(l - r) + torch.abs(t - b)
+		neutral = atss_map.new_full(size=atss_map.shape, fill_value=2)
+		atss_map = torch.where(fg > 0, atss_map, neutral)
+		flatten_atss_map = atss_map.flatten()
 
-		z = torch.zeros_like(fr)
-		result = z.scatter(-1, indices, 2).reshape_as(r)
+		_, indices = flatten_atss_map.topk(k, largest=False)
+
+		z = torch.zeros_like(flatten_atss_map)
+		result = z.scatter(-1, indices, 2).reshape_as(atss_map)
 		result -= 1
+		result.unsqueeze_(-1)
 
 		return result
 

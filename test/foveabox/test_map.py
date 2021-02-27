@@ -14,7 +14,9 @@ from test.fcos.level_map_fixtures import (
 )
 
 from test.foveabox.level_map_fixtures import (
-	expected_joint_map_8x8
+	expected_joint_map_8x8,
+	sample_reg_slab,
+	expected_atss_11_joint_map_8x8
 )
 
 
@@ -30,6 +32,13 @@ def expected_level_thresholds(expected_level_map_sizes, image_size):
 @pytest.fixture
 def mapper(strides, image_size):
 	m = Mapper(strides, image_size, sigma=1.0, num_classes=3)
+
+	return m
+
+
+@pytest.fixture
+def atss_mapper(strides, image_size):
+	m = Mapper(strides, image_size, sigma=1.0, atss_k=11, num_classes=3)
 
 	return m
 
@@ -50,3 +59,10 @@ def test_map_sample(sample, mapper, expected_joint_map_8x8):
 	assert result_joint_map_8x8.shape == expected_joint_map_8x8.shape
 
 	assert torch.allclose(result_joint_map_8x8, expected_joint_map_8x8)
+
+def test_calc_atss(sample_reg_slab, atss_mapper, expected_atss_11_joint_map_8x8):
+	atss_slab = atss_mapper._calc_atss_slab(sample_reg_slab)
+
+	assert atss_slab.shape == expected_atss_11_joint_map_8x8.shape
+
+	assert torch.allclose(atss_slab, expected_atss_11_joint_map_8x8)

@@ -5,6 +5,8 @@ import math
 
 import torch
 
+from test.fcos.level_map_fixtures import image_size
+
 
 @pytest.fixture
 def expected_joint_map_8x8(image_size):
@@ -90,5 +92,92 @@ def expected_joint_map_8x8(image_size):
 
 	result = torch.cat([reg, bg, fg1, fg2], dim=-1)
 	result = result.permute(2, 0, 1)
+
+	return result
+
+
+@pytest.fixture
+def sample_reg_slab(image_size):
+	l = torch.tensor([
+		[-10] * 8,
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] + [27., 59., 91., 123., 155., 187.] + [-10],
+		[-10] * 8
+	]).unsqueeze(dim=-1)
+
+	t = torch.tensor([
+		[-10] * 8,
+		[-10] + [21.] * 6 + [-10],
+		[-10] + [53.] * 6 + [-10],
+		[-10] + [85.] * 6 + [-10],
+		[-10] + [117.] * 6 + [-10],
+		[-10] + [149.] * 6 + [-10],
+		[-10] + [181.] * 6 + [-10],
+		[-10] * 8
+	]).unsqueeze(dim=-1)
+
+	r = torch.tensor([
+		[-10] * 8,
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] + [168., 136., 104., 72., 40., 8.] + [-10],
+		[-10] * 8
+	]).unsqueeze(dim=-1)
+
+	b = torch.tensor([
+		[-10] * 8,
+		[-10] + [178.] * 6 + [-10],
+		[-10] + [146.] * 6 + [-10],
+		[-10] + [114.] * 6 + [-10],
+		[-10] + [82.] * 6 + [-10],
+		[-10] + [50.] * 6 + [-10],
+		[-10] + [18.] * 6 + [-10],
+		[-10] * 8
+	]).unsqueeze(dim=-1)
+
+	reg = torch.cat([l, t, r, b], dim=-1)
+	reg /= image_size
+
+	return reg
+
+
+@pytest.fixture
+def expected_atss_11_joint_map_8x8(sample_reg_slab):
+	l = sample_reg_slab[..., 0]
+	t = sample_reg_slab[..., 1]
+	r = sample_reg_slab[..., 2]
+	b = sample_reg_slab[..., 3]
+
+	bg = torch.tensor([
+		[1.] * 8,
+		[1.] + [0] * 6 + [1],
+		[1.] + [0] * 6 + [1],
+		[1.] + [0] * 6 + [1],
+		[1.] + [0] * 6 + [1],
+		[1.] + [0] * 6 + [1],
+		[1.] + [0] * 6 + [1],
+		[1.] * 8
+	])
+
+	atss_diff_raw = torch.abs(l - r) + torch.abs(t - b)
+	neutral_map = atss_diff_raw.new_full(atss_diff_raw.shape, 2.)
+	atss_diff = torch.where(bg > 0, neutral_map, atss_diff_raw)
+
+	atss_flatten = atss_diff.flatten()
+
+	_, indices = atss_flatten.topk(11, largest=False)
+	z = torch.zeros_like(atss_flatten)
+
+	result = z.scatter(-1, indices, 2)
+	result = result.reshape([8, 8])
+	result -= 1
+	result = result.unsqueeze(-1)
 
 	return result
