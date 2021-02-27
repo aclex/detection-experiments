@@ -61,7 +61,7 @@ class Mapper(fcos_map.Mapper):
 		b = atss_map[..., 3]
 		fg = self._filter_background(atss_map).squeeze(-1)
 
-		k = min(torch.nonzero(fg).numel(), self.atss_k)
+		k = min((fg > 0).numel(), self.atss_k)
 
 		atss_map = torch.abs(l - r) + torch.abs(t - b)
 		neutral = atss_map.new_full(size=atss_map.shape, fill_value=2)
