@@ -162,13 +162,13 @@ class Mapper(nn.Module, LevelMapOperations):
 
 	@staticmethod
 	def _filter_background(level_map):
-		mn, _ = level_map.min(dim=2)
+		mn, _ = level_map.min(dim=-1)
 		return mn.unsqueeze(-1) >= 0
 
 	def _pointwise_fit_in_level(self, level_map, level):
 		th = self.level_thresholds[level]
 
-		mx, _ = level_map.max(dim=2)
+		mx, _ = level_map.max(dim=-1)
 
 		return (mx.unsqueeze(-1) > th[0]) & (mx.unsqueeze(-1) <= th[1])
 
