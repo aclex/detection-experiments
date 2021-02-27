@@ -21,7 +21,7 @@ from test.foveabox.level_map_fixtures import (
 @pytest.fixture
 def expected_level_thresholds(expected_level_map_sizes, image_size):
 	pixel_sizes = [1 / float(e) for e in expected_level_map_sizes]
-	level_thresholds = ((1, 4), (2, 4), (2, 4), (2, 4))
+	level_thresholds = ((1, 4), (1, 4), (1, 4), (1, 4))
 
 	return tuple(
 		(l[0] * p, l[1] * p) for l, p in zip(level_thresholds, pixel_sizes))

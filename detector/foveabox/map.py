@@ -10,11 +10,11 @@ from detector.fcos import map as fcos_map
 class Mapper(fcos_map.Mapper):
 	def __init__(
 			self, strides, image_size, num_classes,
-			sigma, atss_k=None,
+			sigma=1, atss_k=None,
 			device=None, dtype=None):
 		super().__init__(strides, image_size, num_classes, device, dtype)
 
-		self.sigma = sigma
+		self.sigma = sigma if atss_k is None else 1
 		self.atss_k = atss_k
 
 	@staticmethod
@@ -119,10 +119,6 @@ class Mapper(fcos_map.Mapper):
 					zip(gt_boxes, gt_labels, map(Mapper._calc_area, gt_boxes)),
 					key=lambda v: v[2],
 					reverse=True):
-				if not self._is_visible(box, level) or \
-						not self._fits_in_level(area, level):
-					continue
-
 				norm_box = box / self.image_size
 
 				l = mx - norm_box[0]
@@ -131,18 +127,21 @@ class Mapper(fcos_map.Mapper):
 				b = norm_box[3] - my
 
 				reg_slab = self._calc_reg_slab(s, [l, t, r, b])
+				cls_slab = self._calc_class_slab(s, label)
+
+				self._clear_box_background(cls_level_map, reg_slab)
+
+				if not self._is_visible(box, level) or \
+						not self._fits_in_level(area, level):
+					continue
 
 				if self.atss_k is not None:
 					fovea_slab = self._calc_atss_slab(reg_slab)
 				else:
 					fovea_slab = self._calc_fovea_slab(norm_box, reg_slab)
 
-				cls_slab = self._calc_class_slab(s, label)
-
 				reg_pred = self._filter_background(reg_slab)
 				cls_pred = self._filter_background(fovea_slab)
-
-				self._clear_box_background(cls_level_map, reg_slab)
 
 				cls_level_map = torch.where(cls_pred, cls_slab, cls_level_map)
 				reg_level_map = torch.where(reg_pred, reg_slab, reg_level_map)
