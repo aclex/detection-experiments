@@ -5,7 +5,7 @@ import math
 
 import torch
 
-from test.fcos.level_map_fixtures import image_size
+from test.fcos.level_map_fixtures import image_size, sample
 
 
 @pytest.fixture
@@ -181,3 +181,8 @@ def expected_atss_11_joint_map_8x8(sample_reg_slab):
 	result = result.unsqueeze(-1)
 
 	return result
+
+
+@pytest.fixture
+def sample_atss_box(sample):
+	return sample[0][0]
