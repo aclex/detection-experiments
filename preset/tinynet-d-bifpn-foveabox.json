@@ -1,0 +1,20 @@
+{
+	"arch" : "foveabox",
+	"backbone" :
+	{
+		"arch" : "tinynet",
+		"edition" : "d"
+	},
+	"fpn" : "bifpn",
+	"norm" : "group",
+	"image_size" : 256,
+	"loss" :
+	{
+		"weights" :
+		{
+			"cls" : 1.0,
+			"reg" : 1.0,
+			"centerness" : 1.0
+		}
+	}
+}
