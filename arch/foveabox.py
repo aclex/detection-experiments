@@ -20,8 +20,6 @@ class FoveaBox(CoreSettings):
 	def __init__(self, config):
 		super().__init__(config)
 
-		print("here")
-
 		self.backbone_class = parse_backbone(self.settings["backbone"])
 
 		self.fpn = parse_fpn_class(self.settings["fpn"])
