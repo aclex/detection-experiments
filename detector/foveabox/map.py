@@ -10,12 +10,12 @@ from detector.fcos import map as fcos_map
 class Mapper(fcos_map.Mapper):
 	def __init__(
 			self, strides, image_size, num_classes,
-			sigma=1, atss_k=None,
+			sigma=1, atss_k_ratio=None,
 			device=None, dtype=None):
 		super().__init__(strides, image_size, num_classes, device, dtype)
 
-		self.sigma = sigma if atss_k is None else 1
-		self.atss_k = atss_k
+		self.sigma = sigma if atss_k_ratio is None else 1
+		self.atss_k_ratio = atss_k_ratio
 
 	@staticmethod
 	def _calc_level_thresholds(strides, image_size):
@@ -52,7 +52,13 @@ class Mapper(fcos_map.Mapper):
 
 		return (norm_area > th[0] * th[0]) & (norm_area <= th[1] * th[1])
 
-	def _calc_atss_slab(self, level_map):
+	def _calc_atss_k(self, area, level):
+		assert self.atss_k_ratio is not None
+
+		s = self.strides[level]
+		return math.ceil(area * self.atss_k_ratio / s)
+
+	def _calc_atss_slab(self, level_map, k):
 		atss_map = level_map.clone().detach()
 
 		l = atss_map[..., 0]
@@ -61,7 +67,7 @@ class Mapper(fcos_map.Mapper):
 		b = atss_map[..., 3]
 		fg = self._filter_background(atss_map).squeeze(-1)
 
-		k = min(torch.count_nonzero(fg).item(), self.atss_k)
+		k = min(torch.count_nonzero(fg).item(), k)
 
 		atss_map = torch.abs(l - r) + torch.abs(t - b)
 		neutral = atss_map.new_full(size=atss_map.shape, fill_value=2)
@@ -139,8 +145,9 @@ class Mapper(fcos_map.Mapper):
 						not self._fits_in_level(area, level):
 					continue
 
-				if self.atss_k is not None:
-					fovea_slab = self._calc_atss_slab(reg_slab)
+				if self.atss_k_ratio is not None:
+					k = self._calc_atss_k(area, level)
+					fovea_slab = self._calc_atss_slab(reg_slab, k)
 				else:
 					fovea_slab = self._calc_fovea_slab(norm_box, reg_slab)
 
