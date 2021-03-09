@@ -9,6 +9,7 @@ from backbone.timm import Timm
 from fpn.bifpn import BiFPN
 
 from nn.separable_conv_2d import SeparableConv2d
+from nn.mish import Mish
 
 
 def parse_backbone(settings):
@@ -65,3 +66,9 @@ def parse_act(name):
 		return nn.ReLU6
 	elif name.casefold() == "leakyrelu":
 		return nn.LeakyReLU
+	elif name.casefold() == "gelu":
+		return nn.GELU
+	elif name.casefold() == "hardswish" or name.casefold() == "hswish":
+		return nn.Hardswish
+	elif name.casefold() == "mish":
+		return Mish
