@@ -2,7 +2,7 @@
 	"arch" : "fcos",
 	"backbone" :
 	{
-		"arch" : "mobilenetv3-large"
+		"arch" : "mobilenetv3_large_100"
 	},
 	"fpn" : "bifpn",
 	"norm" : "group",

@@ -2,7 +2,7 @@
 	"arch" : "ssd",
 	"backbone" :
 	{
-		"arch" : "mobilenetv3-small"
+		"arch" : "mobilenetv3_small_100"
 	},
 	"image_size" : 300
 }

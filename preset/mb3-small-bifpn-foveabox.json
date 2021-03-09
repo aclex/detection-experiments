@@ -2,7 +2,7 @@
 	"arch" : "foveabox",
 	"backbone" :
 	{
-		"arch" : "mobilenetv3-small"
+		"arch" : "mobilenetv3_small_100"
 	},
 	"fpn" : "bifpn",
 	"norm" : "group",
