@@ -21,18 +21,18 @@ def MobileNetV3_Large(**kwargs):
 		**kwargs)
 
 	m.feature_strides = feature_strides
-	#  m.feature_channels = types.MethodType(feature_channels, m)
+	m.feature_channels = types.MethodType(feature_channels, m)
 
 	return m
 
 def MobileNetV3_Small(**kwargs):
 	m = outlet.models.mobilenetv3_small_100(
 		features_only=True,
-		out_indices=(1, 2, 3),
+		out_indices=(2, 3, 4),
 		feature_location="bottleneck",
 		**kwargs)
 
 	m.feature_strides = feature_strides
-	#  m.feature_channels = types.MethodType(feature_channels, m)
+	m.feature_channels = types.MethodType(feature_channels, m)
 
 	return m

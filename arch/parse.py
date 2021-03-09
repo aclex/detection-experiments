@@ -4,6 +4,7 @@ from torch import nn
 from backbone.rw_mobilenetv3 import MobileNetV3_Large, MobileNetV3_Small
 from backbone.ghostnet import GhostNet
 from backbone.tinynet import TinyNet
+from backbone.timm import Timm
 
 from fpn.bifpn import BiFPN
 
@@ -26,8 +27,8 @@ def parse_backbone(settings):
 		edition = settings.get("edition", 'a')
 		return partial(TinyNet, edition=edition)
 
-	else:
-		return None
+	else: # try to create model with `timm`
+		return partial(Timm, model=arch)
 
 
 def parse_fpn_class(name):
