@@ -1,6 +1,9 @@
+import types
+
 from torch import nn
 
 from timm.models.efficientnet_builder import *
+from timm.models.efficientnet_blocks import resolve_bn_args
 from timm.models.efficientnet import EfficientNetFeatures, _cfg
 
 
@@ -15,6 +18,10 @@ EDITIONS = {
 
 def feature_strides():
 	return [8, 16, 32]
+
+
+def feature_channels(self):
+	return self.feature_info.channels()
 
 
 def TinyNet(edition, **kwargs):
@@ -47,5 +54,6 @@ def TinyNet(edition, **kwargs):
 	m.default_cfg =_cfg(input_size=(3, hw, hw))
 
 	m.feature_strides = feature_strides
+	m.feature_channels = types.MethodType(feature_channels, m)
 
 	return m
