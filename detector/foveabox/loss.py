@@ -48,10 +48,12 @@ class Loss(nn.Module):
 		reg_pred, cls_pred = Loss._apply_mask(reg_pred, cls_pred, mask)
 		reg_target, cls_target = Loss._apply_mask(reg_target, cls_target, mask)
 
-		reg_loss = self.reg_loss(reg_pred, reg_target)
-		reg_loss = torch.sum(reg_loss.flatten())
 		if num_elements != 0:
+			reg_loss = self.reg_loss(reg_pred, reg_target)
+			reg_loss = torch.sum(reg_loss.flatten())
 			reg_loss /= num_elements
+		else:
+			reg_loss = reg_pred.new_tensor(0.)
 
 		cls_loss = self.cls_loss(cls_pred, cls_target)
 		if num_elements != 0:
