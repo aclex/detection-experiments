@@ -15,11 +15,16 @@ def parse_backbone(settings):
 	arch = settings["arch"]
 	if arch.casefold() == "ghostnet":
 		width = settings.get("width", 1.0)
+
 		return partial(GhostNet, width=width)
 
 	elif arch.casefold() == "tinynet":
-		edition = settings.get("edition", 'a')
-		return partial(TinyNet, edition=edition)
+		edition = settings.get("edition", None)
+		r = settings.get("r", 1)
+		w = settings.get("w", 1)
+		d = settings.get("d", 1)
+
+		return partial(TinyNet, edition=edition, r=r, w=w, d=d)
 
 	else: # try to create model with `timm`
 		return partial(Timm, model=arch)

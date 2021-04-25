@@ -26,7 +26,13 @@ def feature_channels(self):
 
 def TinyNet(edition, **kwargs):
 	kwargs.pop('pretrained')
-	r, w, d = EDITIONS.get(edition.casefold(), (1., 1., 1.))
+
+	if edition is not None:
+		r, w, d = EDITIONS.get(edition.casefold(), (1., 1., 1.))
+	else:
+		r = kwargs.pop('r', 1)
+		w = kwargs.pop('w', 1)
+		d = kwargs.pop('d', 1)
 
 	"""Creates a TinyNet model.
 	"""
