@@ -58,6 +58,8 @@ class Loss(nn.Module):
 		cls_loss = self.cls_loss(cls_pred, cls_target)
 		if num_elements != 0:
 			cls_loss /= num_elements
+		else:
+			cls_loss /= cls_target.size(-2)
 
 		return {
 			"total": self._combine(reg_loss, cls_loss),
