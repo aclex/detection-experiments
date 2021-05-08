@@ -16,7 +16,11 @@ class CoreSettings():
 	def __init__(self, config):
 		self.settings = json_from_file_or_string(config)
 
-		self.name = os.path.splitext(os.path.basename(config))[0]
+		self.name = self.settings.get(
+			"preset", os.path.splitext(os.path.basename(config))[0])
+
+		if not "preset" in self.settings:
+			self.settings["preset"] = self.name
 
 		self.image_size = self.settings["image_size"]
 
