@@ -49,4 +49,6 @@ class FCOS(CoreSettings):
 		return Loss(net.strides, self.image_size, net.head.num_classes)
 
 	def mapper(self, net, device=None):
-		return Mapper(net.strides, self.image_size, net.head.num_classes)
+		return Mapper(
+			net.strides, self.image_size, net.head.num_classes,
+			device=device)

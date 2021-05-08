@@ -8,7 +8,7 @@ from detector.fcos import unmap as fcos_unmap
 class Unmapper(fcos_unmap.Unmapper):
 	def __init__(
 			self, strides, image_size, num_classes,
-			batch_size=1, device=None, dtype=None):
+			batch_size=1, device=None, dtype=torch.float32):
 		super().__init__(
 			strides, image_size, num_classes,
 			batch_size, device, dtype)

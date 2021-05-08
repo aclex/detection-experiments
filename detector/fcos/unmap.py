@@ -8,7 +8,7 @@ from .level_map_operations import LevelMapOperations
 class Unmapper(nn.Module, LevelMapOperations):
 	def __init__(
 			self, strides, image_size, num_classes,
-			batch_size=1, device=None, dtype=None):
+			batch_size=1, device=None, dtype=torch.float32):
 		super(Unmapper, self).__init__()
 
 		self.strides = strides

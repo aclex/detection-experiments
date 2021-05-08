@@ -10,7 +10,7 @@ from .level_map_operations import LevelMapOperations
 class Mapper(nn.Module, LevelMapOperations):
 	def __init__(
 			self, strides, image_size, num_classes,
-			device=None, dtype=None):
+			device=None, dtype=torch.float32):
 		super(Mapper, self).__init__()
 
 		self.strides = strides

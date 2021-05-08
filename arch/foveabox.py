@@ -53,4 +53,5 @@ class FoveaBox(CoreSettings):
 	def mapper(self, net, device=None):
 		return Mapper(
 			net.strides, self.image_size, net.head.num_classes,
-			sigma=self.sigma, atss_k_ratio=self.atss_k_ratio)
+			sigma=self.sigma, atss_k_ratio=self.atss_k_ratio,
+			device=device)

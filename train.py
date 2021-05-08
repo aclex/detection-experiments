@@ -46,15 +46,6 @@ def loop(
 		boxes = data["bboxes"]
 		labels = data["category_id"]
 
-		# prevent first batch be without any ground truth boxes
-		if epoch <= 0 and num == 0:
-			num_boxes = 0
-			for b in boxes:
-				num_boxes += b.size(0)
-
-			if num_boxes == 0:
-				continue
-
 		images = images.to(device, dtype=torch.float32)
 		boxes = [b.to(device, dtype=torch.float32) for b in boxes]
 		labels = [l.to(device, dtype=torch.long) for l in labels]

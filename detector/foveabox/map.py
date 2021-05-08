@@ -11,7 +11,7 @@ class Mapper(fcos_map.Mapper):
 	def __init__(
 			self, strides, image_size, num_classes,
 			sigma=1, atss_k_ratio=None,
-			device=None, dtype=None):
+			device=None, dtype=torch.float32):
 		super().__init__(strides, image_size, num_classes, device, dtype)
 
 		self.sigma = sigma if atss_k_ratio is None else 1
@@ -39,6 +39,9 @@ class Mapper(fcos_map.Mapper):
 			result.append((th_min * pixel_size, th_max * pixel_size))
 
 		return tuple(result[::-1])
+
+	def _create_empty_maps(self, device, dtype, with_centerness=False):
+		return super()._create_empty_maps(device, dtype, with_centerness)
 
 	def _is_visible(self, box, level):
 		s = self.strides[level]
@@ -110,8 +113,7 @@ class Mapper(fcos_map.Mapper):
 						"positive target")
 
 				self._empty_maps = self._create_empty_maps(
-					gt_boxes[0].device, gt_boxes[0].dtype,
-					with_centerness=False)
+					gt_boxes[0].device, gt_boxes[0].dtype)
 				self._grid_maps = self._create_grid_maps(
 					gt_boxes[0].device, gt_boxes[0].dtype)
 
