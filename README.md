@@ -50,7 +50,7 @@ model structure (e.g. backbone or FPN architecture used, values of meta-paramete
 
 Use `train.py` script for training, with various options to choose dataset type (datasets in [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) and [MS COCO](http://cocodataset.org) formats supported), optimizer ([Ranger](https://arxiv.org/abs/2004.01461) is the default, [DiffGrad](https://arxiv.org/abs/1909.11015v2) and [AdamW](https://arxiv.org/abs/1711.05101) are the options, SGD with momentum to be back for the sake of comparison), and learning rate scheduling strategy ([Cosine Annealing with Warm Restarts](https://arxiv.org/abs/1608.03983) is the default, multi-step is a baseline option). Example:
 ```bash
-python train.py --dataset-style=coco --dataset /mnt/dataset/vision/COCO --train-image-set=train2012 --val-image-set=val2012 --net mb3-small-ssd-lite --scheduler cosine-wr --lr 0.01 --t0 5 --num-epochs 5
+python train.py --dataset-style=coco --dataset /mnt/dataset/vision/COCO --train-image-set=train2012 --val-image-set=val2012 --net-config preset/tinynet-a-bifpn-foveabox.json --scheduler cosine-wr --lr 0.01 --t0 5 --num-epochs 5
 ```
 
 You can manually specify the device to use with `--device` key, otherwise CUDA/ROCm device would be used automatically if available or CPU as a fallback. For the case of MobileNetV3-Small-based model one epoch with batch size 32 takes about 5 minutes on CPU (Inter Core i7-6700K) and 1 minute on GPU (AMD Radeon VII) to train, with first sane predictions being available after 10-20 epochs and convergence after 128-256+ epochs, depending on the dataset size.
