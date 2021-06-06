@@ -3,7 +3,6 @@ import types
 from torch import nn
 
 from timm.models.efficientnet_builder import *
-from timm.models.efficientnet_blocks import resolve_bn_args
 from timm.models.efficientnet import EfficientNetFeatures, _cfg
 
 
