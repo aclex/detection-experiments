@@ -45,8 +45,8 @@ def group_annotation_by_class(dataset):
 	all_gt_boxes = {}
 	all_difficult_cases = {}
 
-	input_bbox_converter = BboxFormatConvert(source_format=dataset.bbox_format,
-	                                         target_format='pascal_voc')
+	input_bbox_converter = BboxFormatConvert(
+		source_format=dataset.bbox_format, target_format='pascal_voc')
 
 	print("Processing dataset...")
 	for i in interactive(range(len(dataset))):
@@ -57,15 +57,16 @@ def group_annotation_by_class(dataset):
 		else:
 			is_difficult = [False] * len(classes)
 
-		gt_boxes = input_bbox_converter(image=dataset.get_image(i),
-		                                bboxes=gt_boxes)["bboxes"]
+		gt_boxes = input_bbox_converter(
+			image=dataset.get_image(i), bboxes=gt_boxes)["bboxes"]
 		gt_boxes = torch.tensor(gt_boxes)
 
 		for i, difficult in enumerate(is_difficult):
 			class_index = int(classes[i])
 			gt_box = gt_boxes[i]
 			if not difficult:
-				true_case_stat[class_index] = true_case_stat.get(class_index, 0) + 1
+				true_case_stat[class_index] = \
+					true_case_stat.get(class_index, 0) + 1
 
 			if class_index not in all_gt_boxes:
 				all_gt_boxes[class_index] = {}
@@ -171,8 +172,8 @@ def eval(dataset, predictor, iou_threshold=0.5,
 	for i in interactive(range(len(dataset))):
 		image = dataset.get_image(i)
 		image_id = dataset.ids[i]
-		boxes, labels, probs = predictor.predict(image,
-		                                         prob_threshold=0)
+		boxes, labels, probs = predictor.predict(
+			image, prob_threshold=0)
 
 		for box, label, prob in zip(boxes, labels, probs):
 			if label.item() not in results_per_class:

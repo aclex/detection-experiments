@@ -23,34 +23,38 @@ def main():
 	parser = argparse.ArgumentParser(
 		description="Calculate Pascal VOC evaluation metrics")
 
-	parser.add_argument("--model-path", '-p', type=str, required=True,
-	                    help="path to the trained model")
+	parser.add_argument(
+		"--model-path", '-p', type=str, required=True,
+		help="path to the trained model")
 
-	parser.add_argument('--dataset-style', type=str, required=True,
-	                    help="style of dataset "
-	                    "(supported are 'pascal-voc' and 'coco')")
+	parser.add_argument(
+		'--dataset-style', type=str, required=True,
+		help="style of dataset "
+		"(supported are 'pascal-voc' and 'coco')")
 
-	parser.add_argument('--image-set', type=str, default="test",
-	                    help='image set (annotation file basename for COCO) '
-	                    'to use for evaluation')
+	parser.add_argument(
+		'--image-set', type=str, default="test",
+		help='image set (annotation file basename for COCO) '
+		'to use for evaluation')
 
 	parser.add_argument("--dataset", type=str, help="dataset directory path")
 
-	parser.add_argument("--metric", '-m', type=str, default='pascal-voc',
-	                    help="metric to calculate ('pascal-voc' or 'coco')")
+	parser.add_argument(
+		"--metric", '-m', type=str, default='pascal-voc',
+		help="metric to calculate ('pascal-voc' or 'coco')")
 
 	parser.add_argument("--nms-method", type=str, default="hard")
-
-	parser.add_argument("--iou-threshold", type=float, default=0.5,
-	                    help="IOU threshold (for Pascal VOC metric)")
 
 	parser.add_argument("--metric-score-threshold", type=float, default=0.5,
 	                    help="Score threshold (for calculating TP, FP, FN "
 	                    "metrics along with Pascal VOC metric)")
+	parser.add_argument(
+		"--iou-threshold", type=float, default=0.5,
+		help="IOU threshold (for Pascal VOC metric)")
 
-	parser.add_argument("--use-2007", action='store_true',
-	                    help="Use 2007 calculation algorithm "
-	                    "(for Pascal VOC metric)")
+	parser.add_argument(
+		"--use-2007", action='store_true',
+		help="Use 2007 calculation algorithm (for Pascal VOC metric)")
 
 	parser.add_argument('--device', type=str, help='device to use')
 
@@ -73,9 +77,10 @@ def main():
 	model.eval()
 
 	if dataset.class_names != class_names:
-		print("Dataset classes don't match the classes "
-		      "the specified model is trained with. "
-		      "No chance to get valid results, so I give up.")
+		print(
+			"Dataset classes don't match the classes "
+			"the specified model is trained with. "
+			"No chance to get valid results, so I give up.")
 		sys.exit(-1)
 
 	mean, std = mean_std(args.dataset_style, args.dataset, args.image_set)
