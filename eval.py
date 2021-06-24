@@ -45,9 +45,6 @@ def main():
 
 	parser.add_argument("--nms-method", type=str, default="hard")
 
-	parser.add_argument("--metric-score-threshold", type=float, default=0.5,
-	                    help="Score threshold (for calculating TP, FP, FN "
-	                    "metrics along with Pascal VOC metric)")
 	parser.add_argument(
 		"--iou-threshold", type=float, default=0.5,
 		help="IOU threshold (for Pascal VOC metric)")
@@ -89,10 +86,10 @@ def main():
 
 	if args.metric == 'pascal-voc':
 		logging.info("Calculating Pascal VOC metric...")
-		pascal_voc.eval(dataset, predictor,
-		                iou_threshold=args.iou_threshold,
-		                metric_score_threshold=args.metric_score_threshold,
-		                use_2007_metric=args.use_2007)
+		pascal_voc.eval(
+			dataset, predictor,
+			iou_threshold=args.iou_threshold,
+			use_2007_metric=args.use_2007)
 
 	elif args.metric == 'coco':
 		logging.info("Calculating COCO metric...")

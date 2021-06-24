@@ -89,8 +89,7 @@ def group_annotation_by_class(dataset):
 
 def compute_average_precision_per_class(num_true_cases, gt_boxes,
                                         difficult_cases, preds,
-                                        iou_threshold, metric_score_threshold,
-                                        use_2007_metric):
+                                        iou_threshold, use_2007_metric):
 	image_ids = []
 	boxes = []
 	scores = []
@@ -110,14 +109,10 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes,
 	false_positive = np.zeros(len(image_ids))
 	matched = set()
 
-	avg_ious = []
-	tp_count = 0
-	fp_count = 0
 	for i, image_id in enumerate(image_ids):
 		box = boxes[i]
 		if image_id not in gt_boxes:
 			false_positive[i] = 1
-			fp_count += 1
 			continue
 
 		image_gt_boxes = gt_boxes[image_id]
@@ -130,24 +125,10 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes,
 				if (image_id, max_arg) not in matched:
 					true_positive[i] = 1
 					matched.add((image_id, max_arg))
-
-					if scores[i] >= metric_score_threshold:
-						tp_count += 1
-						avg_ious.append(max_iou)
 				else:
 					false_positive[i] = 1
-					if scores[i] >= metric_score_threshold:
-						fp_count += 1
 		else:
 			false_positive[i] = 1
-			if scores[i] >= metric_score_threshold:
-				fp_count += 1
-
-	total_gt_boxes_count = 0
-	for _, image_gt_boxes in gt_boxes.items():
-		total_gt_boxes_count += len(image_gt_boxes)
-
-	fn_count = total_gt_boxes_count - tp_count
 
 	true_positive = true_positive.cumsum()
 	false_positive = false_positive.cumsum()
@@ -156,15 +137,12 @@ def compute_average_precision_per_class(num_true_cases, gt_boxes,
 	recall = true_positive / num_true_cases
 
 	if use_2007_metric:
-		return compute_voc2007_average_precision(precision, recall), \
-			np.mean(avg_ious), tp_count, fp_count, fn_count
+		return compute_voc2007_average_precision(precision, recall)
 	else:
-		return compute_average_precision(precision, recall), \
-			np.mean(avg_ious), tp_count, fp_count, fn_count
+		return compute_average_precision(precision, recall)
 
 
-def eval(dataset, predictor, iou_threshold=0.5,
-         metric_score_threshold=0, use_2007_metric=False):
+def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 	true_case_stat, all_gt_boxes, all_difficult_cases = \
 		group_annotation_by_class(dataset)
 
@@ -182,31 +160,23 @@ def eval(dataset, predictor, iou_threshold=0.5,
 			results_per_class[label.item()].append((image_id, box, prob))
 
 	aps = []
-	avg_ious = []
-	tps = []
-	fps = []
-	fns = []
 	print("\n\nAverage precision per-class:")
 	for class_index, class_name in enumerate(dataset.class_names):
 		if class_index == 0:
 			continue
 
-		ap, avg_iou, tp, fp, fn = compute_average_precision_per_class(
+		ap = compute_average_precision_per_class(
 			true_case_stat[class_index],
 			all_gt_boxes[class_index],
 			all_difficult_cases[class_index],
 			results_per_class[class_index],
 			iou_threshold,
-			metric_score_threshold,
 			use_2007_metric
 		)
 		aps.append(ap)
-		avg_ious.append(avg_iou)
-		tps.append(tp)
-		fps.append(fp)
-		fns.append(fn)
 
-		print(f"{class_name}: {ap}, TP: {tp}, FP: {fp}, FN: {fn}, "
-		      f"mean IOU: {avg_iou}")
+		print(f"{class_name}: {ap}")
 
-	print(f"\nAverage Precision Across All Classes:{sum(aps)/len(aps)}")
+	avg_ap = sum(aps) / len(aps)
+	print(f"\nAverage Precision Across All Classes:{avg_ap}")
+
