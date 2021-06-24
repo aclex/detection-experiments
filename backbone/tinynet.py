@@ -1,4 +1,5 @@
 import types
+import functools
 
 from torch import nn
 
@@ -41,15 +42,20 @@ def TinyNet(edition, **kwargs):
 		['ir_r3_k5_s1_e6_c112_se0.25'], ['ir_r4_k5_s2_e6_c192_se0.25'],
 		['ir_r1_k3_s1_e6_c320_se0.25'],
 	]
+
+	stem_size = 32
+	round_chs_fn = functools.partial(round_channels, stem_size, w)
+	norm_layer = functools.partial(nn.BatchNorm2d, **resolve_bn_args(kwargs))
+
 	model_kwargs = dict(
 		block_args=decode_arch_def(arch_def, d, depth_trunc="round"),
-		stem_size=32,
+		stem_size=stem_size,
 		fix_stem=True,
-		channel_multiplier=w,
 		act_layer=nn.ReLU,
-		norm_kwargs=resolve_bn_args(kwargs),
+		norm_layer=norm_layer,
 		out_indices=(2, 3, 4),
 		feature_location="bottleneck",
+		round_chs_fn=round_chs_fn,
 		**kwargs
 	)
 
