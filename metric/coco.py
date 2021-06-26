@@ -71,11 +71,11 @@ def eval(dataset, predictor):
 		"categories": gt_coco["categories"]
 	}
 
-	input_bbox_converter = BboxFormatConvert(source_format=dataset.bbox_format,
-	                                         target_format='coco')
+	input_bbox_converter = BboxFormatConvert(
+		source_format=dataset.bbox_format, target_format='coco')
 
-	output_bbox_converter = BboxFormatConvert(source_format='pascal_voc',
-	                                          target_format='coco')
+	output_bbox_converter = BboxFormatConvert(
+		source_format='pascal_voc', target_format='coco')
 
 	for i in interactive(range(len(dataset))):
 		sample = dataset[i]
@@ -110,26 +110,86 @@ def eval(dataset, predictor):
 	dt_coco_obj.dataset = dt_coco
 	dt_coco_obj.createIndex()
 
-	eval = COCOeval(gt_coco_obj, dt_coco_obj, iouType='bbox')
+	e = COCOeval(gt_coco_obj, dt_coco_obj, iouType='bbox')
 
-	eval.evaluate()
-	eval.accumulate()
+	e.evaluate()
+	e.accumulate()
 
-	eval.summarize()
+	e.summarize()
 
-	result = {
-		"Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]": eval.stats[0],
-		"Average Precision  (AP) @[ IoU=0.50	  | area=   all | maxDets=100 ]": eval.stats[1],
-		"Average Precision  (AP) @[ IoU=0.75	  | area=   all | maxDets=100 ]": eval.stats[2],
-		"Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ]": eval.stats[3],
-		"Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ]": eval.stats[4],
-		"Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ]": eval.stats[5],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ]": eval.stats[6],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ]": eval.stats[7],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]": eval.stats[8],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ]": eval.stats[9],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ]": eval.stats[10],
-		"Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ]": eval.stats[11]
-	}
+	result = [
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[0]
+		},
+		{
+			"iou": 0.5,
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[1]
+		},
+		{
+			"iou": 0.75,
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[2]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[1],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[3]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[2],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[4]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[3],
+			"max_dets": e.params.maxDets[2],
+			"ap": e.stats[5]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[0],
+			"ar": e.stats[6]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[1],
+			"ar": e.stats[7]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": [e.params.areaRng[0], e.params.areaRng[-1]],
+			"max_dets": e.params.maxDets[2],
+			"ar": e.stats[8]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[1],
+			"max_dets": e.params.maxDets[2],
+			"ar": e.stats[9]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[2],
+			"max_dets": e.params.maxDets[1],
+			"ar": e.stats[10]
+		},
+		{
+			"iou": [e.params.iouThrs[0], e.params.iouThrs[-1]],
+			"area": e.params.areaRng[3],
+			"max_dets": e.params.maxDets[2],
+			"ar": e.stats[11]
+		}
+	]
 
 	return result

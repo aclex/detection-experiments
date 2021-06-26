@@ -180,3 +180,7 @@ def eval(dataset, predictor, iou_threshold=0.5, use_2007_metric=False):
 	avg_ap = sum(aps) / len(aps)
 	print(f"\nAverage Precision Across All Classes:{avg_ap}")
 
+	return {
+		"per class": aps,
+		"rate": avg_ap
+	}
