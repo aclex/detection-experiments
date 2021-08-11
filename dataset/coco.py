@@ -7,6 +7,8 @@ from torch.utils.data import Dataset
 
 
 class CocoDetection(Dataset):
+	bbox_format = 'coco'
+
 	def __init__(self, root, ann_file, transform=None):
 		"""Dataset for COCO data.
 		Args:
@@ -17,7 +19,6 @@ class CocoDetection(Dataset):
 
 		self.root = root
 		self.transform = transform
-		self.bbox_format = 'coco'
 
 		from pycocotools.coco import COCO
 		self.coco = COCO(self._get_abs_path(ann_file))

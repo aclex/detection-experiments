@@ -93,7 +93,8 @@ def main():
 
 	parser.add_argument(
 		'--dataset-style', type=str, required=True,
-		help="style of dataset (supported are 'pascal-voc' and 'coco')")
+		help="style of dataset "
+		"(supported are 'pascal-voc', 'coco' and 'widerface')")
 	parser.add_argument('--dataset', required=True, help='dataset path')
 	parser.add_argument(
 		'--train-image-set', type=str, default="train",

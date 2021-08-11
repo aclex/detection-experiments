@@ -8,6 +8,8 @@ from torch.utils.data import Dataset
 
 
 class VOCDetection(Dataset):
+	bbox_format = 'pascal_voc'
+
 	def __init__(self, root, year=None, image_set='train', label_file=None,
 	             transform=None, keep_difficult=False):
 		"""Dataset for VOC data.
@@ -19,7 +21,6 @@ class VOCDetection(Dataset):
 		super(VOCDetection, self).__init__()
 
 		self.transform = transform
-		self.bbox_format = 'pascal_voc'
 
 		if year is not None:
 			infix = "VOC%s" % year
