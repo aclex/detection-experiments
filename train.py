@@ -181,6 +181,14 @@ def main():
 		'conventional one with the specified `m` and `n` values '
 		'(e.g. "(9, 3)") ')
 
+	parser.add_argument(
+		'--skip-train-statistics', default=False, action='store_true',
+		help="don't calculate mean and std values for the train dataset "
+		"and use defaults for ImageNet")
+	parser.add_argument(
+		'--skip-val-statistics', default=False, action='store_true',
+		help="don't calculate mean and std values for the validation dataset "
+		"and use defaults for ImageNet")
 
 	logging.basicConfig(
 		stream=sys.stdout, level=logging.INFO,
@@ -208,10 +216,14 @@ def main():
 
 	bbox_format = dataset_bbox_format(args.dataset_style)
 
-	train_mean, train_std = mean_std(
-		args.dataset_style,
-		args.dataset,
-		args.train_image_set)
+	if args.skip_train_statistics:
+		train_mean = (0.485, 0.456, 0.406)
+		train_std = (0.229, 0.224, 0.225)
+	else:
+		train_mean, train_std = mean_std(
+			args.dataset_style,
+			args.dataset,
+			args.train_image_set)
 
 	if args.rand_augment == "":
 		logging.info("Using conventional augmentation pipeline")
@@ -233,10 +245,14 @@ def main():
 	else:
 		val_dataset_root = args.dataset
 
-	val_mean, val_std = mean_std(
-		args.dataset_style,
-		val_dataset_root,
-		args.val_image_set)
+	if args.skip_val_statistics:
+		val_mean = (0.485, 0.456, 0.406)
+		val_std = (0.229, 0.224, 0.225)
+	else:
+		val_mean, val_std = mean_std(
+			args.dataset_style,
+			val_dataset_root,
+			args.val_image_set)
 
 	val_transform = processing.test.Pipeline(
 		[arch.image_size] * 2,
