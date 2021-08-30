@@ -23,11 +23,11 @@ def load(style, path, image_set, transform=None):
 
 def bbox_format(style):
 	if style == 'pascal-voc':
-		return VOCDetection.BBOX_FORMAT
+		return VOCDetection.bbox_format
 	elif style == 'coco':
-		return CocoDetection.BBOX_FORMAT
+		return CocoDetection.bbox_format
 	elif style == 'widerface':
-		return WIDERFace.BBOX_FORMAT
+		return WIDERFace.bbox_format
 	else:
 		raise RuntimeError("Dataset style %s is not supported" % style)
 
