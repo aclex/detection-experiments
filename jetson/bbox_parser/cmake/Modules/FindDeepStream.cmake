@@ -32,7 +32,6 @@ set(DeepStream_LIBRARY_NAMES
 	libnvbufsurftransform.so
 	libnvds_amqp_proto.so
 	libnvds_inferutils.so
-	libnvds_nvdcf.so
 	libnvds_azure_edge_proto.so
 	libnvds_kafka_proto.so
 	libnvds_nvtxhelper.so
@@ -42,10 +41,8 @@ set(DeepStream_LIBRARY_NAMES
 	libnvds_meta.so
 	libnvds_osd.so
 	libnvdsgst_helper.so
-	libnvds_mot_iou.so
 	libnvds_utils.so
 	libnvdsgst_meta.so
-	libnvds_mot_klt.so
 	)
 
 if (DeepStream_FOUND)
